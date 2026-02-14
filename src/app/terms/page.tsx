@@ -1,5 +1,7 @@
 import { FileCheck, ShieldAlert } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default function TermsPage() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 max-w-[800px] animate-in fade-in slide-in-from-bottom-4 duration-500">

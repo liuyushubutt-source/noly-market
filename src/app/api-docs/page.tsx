@@ -1,6 +1,8 @@
 import { Code, Terminal, Zap, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
+export const dynamic = "force-dynamic";
+
 export default function ApiDocsPage() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 max-w-[900px] animate-in fade-in slide-in-from-bottom-4 duration-500">

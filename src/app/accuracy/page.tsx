@@ -1,4 +1,8 @@
+
+
 import { ShieldCheck, TrendingUp, Users, Target, BarChart3 } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export default function AccuracyPage() {
   return (
