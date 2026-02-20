@@ -1,34 +1,43 @@
-import { MetadataRoute } from 'next'
+import { MetadataRoute } from 'next';
+import { getAllMarketSlugs } from '@/actions/market-actions'; // Yeni yazdığımız fonksiyonu import ettik
+
+export const revalidate = 3600; // Sitemap her 1 saatte bir güncellensin (Cache)
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://nolymarket.com'; // Kendi domainini yaz
+  const baseUrl = 'https://nolymarket.com'; // Domain adresin
 
-  // 1. Statik Sayfaların (Görselindeki klasörlere göre)
+  // 1. Statik Sayfalar (Elle Eklediklerimiz)
   const staticRoutes = [
-    '',
-    '/leaderboard',
-    '/rewards',
-    '/help',
-    '/accuracy',
-    '/terms'
+    '',              // Ana Sayfa
+    '/leaderboard',  // Sıralama
+    '/rewards',      // Ödüller
+    '/help',         // Yardım
+    '/accuracy',     // Doğruluk Oranı
+    '/terms'         // Kurallar
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: 'daily' as const,
-    priority: route === '' ? 1 : 0.8, // Ana sayfa en yüksek önceliğe sahip (1)
+    priority: route === '' ? 1 : 0.8,
   }));
 
-  /* 2. Dinamik Market Sayfaların
-    İleride veritabanından (Supabase, Prisma vs.) aktif tahmin piyasalarını 
-    çekip sitemap'e otomatik eklemek için bu yapıyı kullanacaksın:
-  */
-  // const activeMarkets = await getActiveMarketsFromDB();
-  // const dynamicRoutes = activeMarkets.map((market) => ({
-  //   url: `${baseUrl}/market/${market.slug}`,
-  //   lastModified: market.updatedAt,
-  //   changeFrequency: 'hourly' as const, // Oranlar sürekli değiştiği için saatlik
-  //   priority: 0.9,
-  // }));
+  // 2. Dinamik Piyasalar (Veritabanından Otomatik Gelenler)
+  let dynamicRoutes: MetadataRoute.Sitemap = [];
 
-  return [...staticRoutes /*, ...dynamicRoutes*/];
+  try {
+    const markets = await getAllMarketSlugs();
+    
+    dynamicRoutes = markets.map((market) => ({
+      url: `${baseUrl}/market/${market.slug}`,
+      lastModified: market.updated_at ? new Date(market.updated_at) : new Date(),
+      changeFrequency: 'hourly' as const, // Oranlar değiştiği için saatlik tarama istiyoruz
+      priority: 0.9, // Piyasa sayfaları bizim için en değerli sayfalar
+    }));
+
+  } catch (error) {
+    console.error("Sitemap oluşturulurken hata:", error);
+  }
+
+  // Hepsini birleştirip döndürüyoruz
+  return [...staticRoutes, ...dynamicRoutes];
 }

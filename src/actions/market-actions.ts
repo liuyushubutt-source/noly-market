@@ -101,3 +101,21 @@ export async function getMarketPrices(marketId: number, marketType: string) {
     return data || [];
   }
 }
+
+// --- SITEMAP İÇİN ÖZEL FONKSİYON ---
+// Bu fonksiyon sadece slug ve tarih çeker, sunucuyu yormaz.
+export async function getAllMarketSlugs() {
+  const supabase = await createServerSideClient();
+  
+  const { data, error } = await supabase
+    .from("markets")
+    .select("slug, updated_at") // Sadece link ve tarih lazım
+    .eq("status", "active"); // Sadece aktif piyasaları Google'a bildiriyoruz
+
+  if (error) {
+    console.error("Sitemap datası çekilemedi:", error);
+    return [];
+  }
+  
+  return data;
+}
