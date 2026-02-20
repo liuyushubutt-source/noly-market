@@ -49,20 +49,32 @@ export default async function MarketPage({ params }: { params: Promise<{ slug: s
     getMarketComments(market.id)
   ]);
 
-  // YENİ EKLENEN: Google Botları için JSON-LD Yapısal Veri (Schema)
+  // GÜNCELLENEN: Google Botları için 'Event' (Etkinlik) Şeması
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Question", // Google'a bunun bir soru/tahmin olduğunu söylüyoruz
+    "@type": "Event",
     "name": market.question,
-    "text": market.description || `${market.question} hakkında tahminlerinizi yapın.`,
+    "description": market.description || "Bu piyasadaki güncel oranları incele, tahminini yap ve portföyünü büyüt.",
     "url": `https://nolymarket.com/market/${market.slug}`,
-    "expires": market.end_date, // Piyasanın bitiş tarihini Google'a bildiriyoruz
-    "author": {
+    // Etkinliğin başlangıç tarihi (eğer veritabanından created_at gelmiyorsa şu anki zamanı baz alır)
+    "startDate": market.created_at ? new Date(market.created_at).toISOString() : new Date().toISOString(),
+    // Bitiş tarihi (Senin veritabanındaki end_date)
+    "endDate": new Date(market.end_date).toISOString(),
+    "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
+    "eventStatus": "https://schema.org/EventScheduled",
+    "location": {
+      "@type": "VirtualLocation",
+      "url": `https://nolymarket.com/market/${market.slug}`
+    },
+    "organizer": {
       "@type": "Organization",
-      "name": "Noly Market"
+      "name": "Noly Market",
+      "url": "https://nolymarket.com"
     }
   };
 
+
+  
   return (
     <>
       {/* Schema Kodunu Sayfaya Enjekte Ediyoruz */}
