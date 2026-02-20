@@ -49,32 +49,33 @@ export default async function MarketPage({ params }: { params: Promise<{ slug: s
     getMarketComments(market.id)
   ]);
 
-  // GÜNCELLENEN: Google Botları için 'Event' (Etkinlik) Şeması
+ // KESİN ÇÖZÜM: Google Botları için 'Breadcrumb' (İçerik Haritası) Şeması
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Event",
-    "name": market.question,
-    "description": market.description || "Bu piyasadaki güncel oranları incele, tahminini yap ve portföyünü büyüt.",
-    "url": `https://nolymarket.com/market/${market.slug}`,
-    // Etkinliğin başlangıç tarihi (eğer veritabanından created_at gelmiyorsa şu anki zamanı baz alır)
-    "startDate": market.created_at ? new Date(market.created_at).toISOString() : new Date().toISOString(),
-    // Bitiş tarihi (Senin veritabanındaki end_date)
-    "endDate": new Date(market.end_date).toISOString(),
-    "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
-    "eventStatus": "https://schema.org/EventScheduled",
-    "location": {
-      "@type": "VirtualLocation",
-      "url": `https://nolymarket.com/market/${market.slug}`
-    },
-    "organizer": {
-      "@type": "Organization",
-      "name": "Noly Market",
-      "url": "https://nolymarket.com"
-    }
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Noly Market",
+        "item": "https://nolymarket.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        // Kategorinin ilk harfini büyütüp yazdırıyoruz (Örn: "siyaset" -> "Siyaset")
+        "name": market.category ? (market.category.charAt(0).toUpperCase() + market.category.slice(1)) : "Piyasalar",
+        "item": `https://nolymarket.com/category/${market.category?.toLowerCase() || 'genel'}`
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": market.question,
+        "item": `https://nolymarket.com/market/${market.slug}`
+      }
+    ]
   };
 
-
-  
   return (
     <>
       {/* Schema Kodunu Sayfaya Enjekte Ediyoruz */}
