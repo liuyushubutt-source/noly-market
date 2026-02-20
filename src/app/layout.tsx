@@ -31,9 +31,6 @@ export const metadata: Metadata = {
     title: "Noly Market | Lider Tahmin Platformu",
     description: "Gerçek zamanlı oranlarla siyaset, spor ve ekonomi tahminleri.",
   },
-  icons: {
-    icon: "/favicon.ico",
-  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
