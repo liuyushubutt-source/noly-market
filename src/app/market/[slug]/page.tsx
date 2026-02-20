@@ -1,19 +1,54 @@
+import type { Metadata } from "next"; // YENİ: Metadata tipini içe aktardık
 import { notFound } from "next/navigation";
 import { getMarketDetail, getMarketPrices } from "@/actions/market-actions";
-import { getMarketComments } from "@/actions/comment-actions"; // YENİ İÇE AKTARMA
+import { getMarketComments } from "@/actions/comment-actions";
 import { MarketChart } from "@/components/market/market-chart";
 import { PredictionPanel } from "@/components/market/prediction-panel";
-import { MarketComments } from "@/components/market/market-comments"; // YENİ İÇE AKTARMA
+import { MarketComments } from "@/components/market/market-comments";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Info } from "lucide-react";
 
+// YENİ EKLENEN: Dinamik SEO (Arama Motoru Optimizasyonu) Fonksiyonu
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ slug: string }> 
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const market = await getMarketDetail(slug);
+
+  if (!market) {
+    return {
+      title: "Piyasa Bulunamadı | Noly Market",
+      description: "Aradığınız tahmin piyasası bulunamadı veya süresi dolmuş olabilir."
+    };
+  }
+
+  // Arama sonuçlarında, WhatsApp/Twitter paylaşımlarında görünecek başlık ve açıklama
+  return {
+    title: market.question, // layout.tsx'teki template sayesinde sonuna otomatik " | Noly Market" eklenecek
+    description: market.description || "Bu piyasadaki güncel oranları incele, tahminini yap ve portföyünü büyüt.",
+    openGraph: {
+      title: market.question,
+      description: market.description,
+      // Eğer veritabanında (market objesinde) piyasaya özel kapak fotoğrafı varsa buraya ekleyebilirsin:
+      // images: market.image_url ? [market.image_url] : ["/og-image.png"],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: market.question,
+      description: market.description,
+    }
+  };
+}
+
+// MEVCUT SAYFA YAPIN (Değişiklik yapılmadı)
 export default async function MarketPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params; // Next.js 15 asenkron params
+  const { slug } = await params; 
   const market = await getMarketDetail(slug);
 
   if (!market) return notFound();
 
-  // Yorumları ve fiyat geçmişini aynı anda çekerek sayfanın yüklenme süresini yarı yarıya düşürüyoruz
   const [chartData, comments] = await Promise.all([
     getMarketPrices(market.id, market.market_type),
     getMarketComments(market.id)
@@ -55,7 +90,7 @@ export default async function MarketPage({ params }: { params: Promise<{ slug: s
             </p>
           </div>
 
-          {/* YENİ EKLENEN: YORUMLAR MODÜLÜ */}
+          {/* YORUMLAR MODÜLÜ */}
           <div className="pt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
              <MarketComments marketId={market.id} initialComments={comments} />
           </div>
@@ -64,7 +99,6 @@ export default async function MarketPage({ params }: { params: Promise<{ slug: s
 
         {/* SAĞ KOLON: Tahmin Paneli */}
         <div className="lg:col-span-4">
-          {/* Mobilde alta kayan, masaüstünde ekrana yapışan (sticky) yapı */}
           <div className="sticky top-24">
             <PredictionPanel market={market} />
           </div>
