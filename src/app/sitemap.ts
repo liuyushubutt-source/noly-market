@@ -6,19 +6,24 @@ export const revalidate = 3600; // Sitemap her 1 saatte bir güncellensin (Cache
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://nolymarket.com'; // Domain adresin
 
-  // 1. Statik Sayfalar (Elle Eklediklerimiz)
-  const staticRoutes = [
-    '',              // Ana Sayfa
-    '/leaderboard',  // Sıralama
-    '/rewards',      // Ödüller
-    '/help',         // Yardım
-    '/accuracy',     // Doğruluk Oranı
-    '/terms'         // Kurallar
+ const staticRoutes = [
+    '',              
+    '/leaderboard',  
+    '/rewards',      
+    '/help',         
+    '/accuracy',     
+    '/terms',
+    // --- YENİ EKLENEN KATEGORİLER ---
+    '/category/siyaset',
+    '/category/spor',
+    '/category/ekonomi',
+    '/category/kripto',
+    '/category/teknoloji'
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: 'daily' as const,
-    priority: route === '' ? 1 : 0.8,
+    priority: route === '' ? 1 : 0.8, // Ana sayfa 1, diğerleri 0.8
   }));
 
   // 2. Dinamik Piyasalar (Veritabanından Otomatik Gelenler)
