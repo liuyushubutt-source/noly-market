@@ -13,13 +13,13 @@ import { HowItWorks } from "./how-it-works";
 import { cn } from "@/lib/utils";
 import { NotificationCenter } from "./notification-center";
 import { NavbarBalance } from "./navbar-balance";
-import { Pie, PieChart } from "recharts"
 
 import { 
   Search, TrendingUp, Landmark, Trophy, Coins, Monitor, Globe, Zap, LogOut, Wallet, 
   User as UserIcon, ChevronRight, ChevronLeft, Bookmark, Menu, Gift, ShieldCheck, 
   Code, FileText, FileCheck, Hash, HelpCircle, Film, Rocket, Cpu, Briefcase, Music, 
-  Gamepad2, Car, Home, MapPin, GraduationCap, Flame, PlaneTakeoff, ShieldAlert
+  Gamepad2, Car, Home, MapPin, GraduationCap, Flame, PlaneTakeoff, ShieldAlert,
+  ArrowRight, PieChart
 } from "lucide-react";
 
 import { 
@@ -175,35 +175,81 @@ export function Navbar() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-9 w-9 rounded-full border border-border overflow-hidden p-0">
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full border-2 border-border/50 overflow-hidden p-0 hover:border-primary/50 transition-colors">
                     <Avatar className="h-full w-full">
                       <AvatarImage src={avatarUrl} className="object-cover h-full w-full aspect-square" />
-                      <AvatarFallback className="font-bold">{user.email?.[0]?.toUpperCase()}</AvatarFallback>
+                      <AvatarFallback className="font-bold bg-primary text-primary-foreground">
+                        {user.email?.[0]?.toUpperCase()}
+                      </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 mt-2 rounded-xl">
-                  <DropdownMenuItem className="md:hidden flex items-center justify-center text-primary font-black bg-primary/5 mb-1 py-3 rounded-lg">
-                    <Wallet className="mr-2 h-4 w-4" /> {Math.round(balance).toLocaleString()} TP
+                
+                {/* GÜNCELLENMİŞ, ŞIK PROFİL MENÜSÜ */}
+                <DropdownMenuContent align="end" className="w-64 mt-2 rounded-[1.5rem] border-border/50 shadow-2xl p-2 bg-background/95 backdrop-blur-xl">
+                  
+                  {/* Kullanıcı Kartı Başlığı */}
+                  <div className="flex items-center gap-3 p-3 mb-2 bg-secondary/30 rounded-xl border border-border/50">
+                     <Avatar className="h-10 w-10 border-2 border-background shadow-sm shrink-0">
+                       <AvatarImage src={avatarUrl} className="object-cover h-full w-full aspect-square" />
+                       <AvatarFallback className="font-bold bg-primary text-primary-foreground">{user.email?.[0]?.toUpperCase()}</AvatarFallback>
+                     </Avatar>
+                     <div className="flex flex-col overflow-hidden">
+                       <span className="font-black text-sm truncate">{user.user_metadata?.full_name || "Kullanıcı"}</span>
+                       <span className="text-[10px] font-medium text-muted-foreground truncate">{user.email}</span>
+                     </div>
+                  </div>
+
+                  {/* Mobil Bakiye Görünümü */}
+                  <DropdownMenuItem className="md:hidden flex items-center justify-between text-primary font-black bg-primary/5 mb-2 p-3 rounded-xl cursor-default focus:bg-primary/5">
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Cüzdan</span>
+                    <span className="flex items-center gap-1.5"><Wallet className="h-4 w-4" /> {Math.round(balance).toLocaleString()} TP</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild><Link href="/profile" className="cursor-pointer font-bold py-2"><UserIcon className="mr-2 h-4 w-4" /> Profilim</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                  <Link href="/portfolio" className="cursor-pointer font-bold py-2">
-                    <PieChart className="mr-2 h-4 w-4" /> Portfolyom
-                  </Link>
-                </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => { supabase.auth.signOut(); window.location.reload(); }} className="text-red-500 focus:text-red-600 focus:bg-red-50 py-2 font-bold cursor-pointer">
-                    <LogOut className="mr-2 h-4 w-4" /> Çıkış Yap
+                  
+                  <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2 mb-1">Hesap İşlemleri</DropdownMenuLabel>
+                  
+                  <DropdownMenuItem asChild className="p-0 mb-1">
+                    <Link href="/profile" className="flex items-center w-full cursor-pointer font-bold px-3 py-2.5 rounded-xl hover:bg-secondary transition-colors text-foreground/80 hover:text-foreground">
+                      <UserIcon className="mr-3 h-4 w-4 text-primary/70" /> Profilim
+                    </Link>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem asChild className="p-0 mb-1">
+                    <Link href="/portfolio" className="flex items-center w-full cursor-pointer font-bold px-3 py-2.5 rounded-xl hover:bg-secondary transition-colors text-foreground/80 hover:text-foreground">
+                      <PieChart className="mr-3 h-4 w-4 text-blue-500/70" /> Portfolyom
+                    </Link>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator className="my-2 border-border/50" />
+                  
+                  <DropdownMenuItem 
+                    onClick={() => { supabase.auth.signOut(); window.location.reload(); }} 
+                    className="flex items-center w-full cursor-pointer font-bold px-3 py-2.5 rounded-xl text-red-500 hover:bg-red-500/10 hover:text-red-600 transition-colors focus:bg-red-500/10 focus:text-red-600"
+                  >
+                    <LogOut className="mr-3 h-4 w-4" /> Çıkış Yap
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           ) : (
-            <Button onClick={handleGoogleLogin} className="font-bold rounded-full px-5 shadow-lg shadow-primary/20">Giriş Yap</Button>
+            // GÜNCELLENMİŞ KAYIT OL / GİRİŞ YAP ALANI
+            <div className="flex items-center gap-2">
+              <Button 
+                onClick={handleGoogleLogin} 
+                variant="ghost" 
+                className="hidden sm:flex font-bold rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground px-4"
+              >
+                Giriş Yap
+              </Button>
+              <Button 
+                onClick={handleGoogleLogin} 
+                className="font-black rounded-full px-5 shadow-lg shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 transition-all"
+              >
+                ÜYE OL <ArrowRight size={14} className="ml-1.5 hidden sm:block" />
+              </Button>
+            </div>
           )}
 
-          {/* DÜZELTME 3: Mobil Hamburger Menü Gizlendi (hidden md:flex yapıldı) */}
           <div className="hidden md:flex items-center">
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -211,7 +257,7 @@ export function Navbar() {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 rounded-xl p-2">
+                <DropdownMenuContent align="end" className="w-64 rounded-xl p-2 border-border/50">
                       <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground uppercase tracking-wider pl-2">Platform</DropdownMenuLabel>
                       <DropdownMenuItem asChild><Link href="/" className="cursor-pointer font-bold py-2"><TrendingUp size={16} className="mr-3 text-primary"/> Piyasalar</Link></DropdownMenuItem>
                       <DropdownMenuItem asChild><Link href="/leaderboard" className="cursor-pointer font-bold py-2"><Trophy size={16} className="mr-3 text-yellow-500"/> Liderlik Tablosu</Link></DropdownMenuItem>
@@ -235,7 +281,6 @@ export function Navbar() {
 
       {/* --- KATMAN 2: ANA KATEGORİLER --- */}
       <div className="border-b border-border/40 bg-background/95 relative group">
-        {/* DÜZELTME 1: Masaüstü Sol Ok Eklendi */}
         <div className="absolute left-0 top-0 bottom-0 items-center px-2 bg-gradient-to-r from-background via-background to-transparent w-20 justify-start z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
           <Button variant="ghost" size="icon" className="h-8 w-8 bg-background shadow-md rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollCategories('left')}>
             <ChevronLeft size={14} />
@@ -260,7 +305,6 @@ export function Navbar() {
           </div>
         </div>
         
-        {/* DÜZELTME 1: Masaüstü Sağ Ok */}
         <div className="absolute right-0 top-0 bottom-0 items-center px-2 bg-gradient-to-l from-background via-background to-transparent w-20 justify-end z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
           <Button variant="ghost" size="icon" className="h-8 w-8 bg-background shadow-md rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollCategories('right')}>
             <ChevronRight size={14} />
@@ -279,7 +323,6 @@ export function Navbar() {
       <div className="bg-secondary/5 border-b border-border/40">
         <div className="container mx-auto px-4 max-w-[1800px] flex items-center gap-2 py-2">
            
-           {/* DÜZELTME 4: Arama ve Kaydettiklerim Sabitlendi (Scroll Dışına Alındı) */}
            <div className="flex items-center gap-2 shrink-0">
              <Popover open={isTagPopoverOpen} onOpenChange={setIsTagPopoverOpen}>
                 <PopoverTrigger asChild>
@@ -317,10 +360,8 @@ export function Navbar() {
              <div className="w-[1px] h-5 bg-border/50 mx-1 shrink-0" />
            </div>
 
-           {/* KAYDIRILABİLİR ETİKETLER (DÜZELTME 2: Sol Ok Eklendi) */}
            <div className="relative flex-1 overflow-hidden flex items-center group">
              
-             {/* Sol Ok */}
              <div className="absolute left-0 top-0 bottom-0 items-center pr-2 bg-gradient-to-r from-background via-background/90 to-transparent w-12 justify-start z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
                 <Button variant="ghost" size="icon" className="h-7 w-7 bg-background shadow-sm rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollTags('left')}><ChevronLeft size={14} /></Button>
              </div>
@@ -336,7 +377,6 @@ export function Navbar() {
                })}
              </div>
 
-             {/* Sağ Ok */}
              <div className="absolute right-0 top-0 bottom-0 items-center pl-2 bg-gradient-to-l from-background via-background/90 to-transparent w-12 justify-end z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
                 <Button variant="ghost" size="icon" className="h-7 w-7 bg-background shadow-sm rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollTags('right')}><ChevronRight size={14} /></Button>
              </div>
