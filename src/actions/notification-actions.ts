@@ -39,35 +39,40 @@ export async function markNotificationsAsRead() {
   revalidatePath("/");
 }
 
-// 3. Saatlik 100 TP Ödülünü Talep Etme
+// 3. Saatlik 100 TP Ödülünü Talep Etme (GÜVENLİ - Race Condition Korumalı)
 export async function claimHourlyReward() {
   const supabase = await createServerSideClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) throw new Error("Giriş yapmalısınız.");
 
-  const { data: profile } = await supabase.from("profiles").select("last_hourly_claim, tp_balance").eq("id", user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("last_hourly_claim").eq("id", user.id).single();
 
   if (!profile) throw new Error("Profil bulunamadı.");
 
-  const lastClaimTime = new Date(profile.last_hourly_claim).getTime();
-  const now = Date.now();
-  const oneHour = 60 * 60 * 1000;
+  // Zaman Kontrolü
+  if (profile.last_hourly_claim) {
+    const lastClaimTime = new Date(profile.last_hourly_claim).getTime();
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
 
-  // Güvenlik: Gerçekten 1 saat geçmiş mi?
-  if (now - lastClaimTime < oneHour) {
-    throw new Error("Henüz 1 saat dolmadı.");
+    // Güvenlik: Gerçekten 1 saat geçmiş mi?
+    if (now - lastClaimTime < oneHour) {
+      throw new Error("Henüz 1 saat dolmadı. Lütfen bekleyin.");
+    }
   }
 
-  // 100 TP Ekle ve Zamanı Güncelle
+  // 1. Adım Hile Koruması: Önce sadece zamanı güncelliyoruz (Üst üste tıklamaları (spam) önlemek için)
   const { error } = await supabase.from("profiles").update({
-    tp_balance: profile.tp_balance + 100,
     last_hourly_claim: new Date().toISOString()
   }).eq("id", user.id);
 
   if (error) throw new Error("Ödül alınamadı.");
 
-  // Bildirim Gönder
+  // 2. Adım: Parayı (TP) Güvenli SQL RPC fonksiyonumuzla (add_tp) yatırıyoruz
+  await supabase.rpc('add_tp', { p_user_id: user.id, p_amount: 100 });
+
+  // 3. Adım: Bildirim Gönder
   await supabase.from("notifications").insert({
     user_id: user.id,
     title: "Saatlik Ödül Alındı 🎁",

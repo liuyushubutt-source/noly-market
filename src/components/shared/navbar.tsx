@@ -13,6 +13,7 @@ import { HowItWorks } from "./how-it-works";
 import { cn } from "@/lib/utils";
 import { NotificationCenter } from "./notification-center";
 import { NavbarBalance } from "./navbar-balance";
+import { Pie, PieChart } from "recharts"
 
 import { 
   Search, TrendingUp, Landmark, Trophy, Coins, Monitor, Globe, Zap, LogOut, Wallet, 
@@ -49,11 +50,9 @@ const MAIN_CATEGORIES = [
   { label: "🌍 Dünya Gündemi", value: "Dünya", icon: Globe },
 ];
 
-// --- KATMAN 4: ALT ETİKETLER (Ulusal Hype, Bölgeler & Trendler - 50 Etiket) ---
+// --- KATMAN 4: ALT ETİKETLER ---
 const SUB_TOPICS = [
   { label: "Tümü", value: null },
-  
-  // Siyaset, Ekonomi & Toplum
   { label: "Erken Seçim", value: "Erken Seçim" },
   { label: "Asgari Ücret", value: "Asgari" },
   { label: "Emekli Zammı", value: "Emekli" },
@@ -64,75 +63,19 @@ const SUB_TOPICS = [
   { label: "BIST 100", value: "BIST" },
   { label: "Konut Fiyatları", value: "Konut" },
   { label: "Kira Düzenlemesi", value: "Kira" },
-  { label: "Vergi Afları", value: "Vergi" },
   { label: "Sokak Hayvanları", value: "Sokak Hayvanları" },
-  
-  // 🏙️ Şehirler, Bölgeler & Sokak
   { label: "İstanbul Depremi", value: "İstanbul Deprem" },
   { label: "İstanbul Trafiği", value: "İstanbul Trafik" },
-  { label: "İstanbul Taksicileri", value: "İBB Taksi" },
-  { label: "Ankara Gündemi", value: "Ankara" },
   { label: "İzmir Körfezi", value: "İzmir Körfez" },
-  { label: "İzmir Trafiği", value: "İzmir Trafik" },
-  { label: "İzmir Taksi Plakası", value: "İzmir Taksi" },
-  { label: "Çeşme & Alaçatı Turizmi", value: "Çeşme" },
-  { label: "Antalya Turizm", value: "Antalya" },
-  { label: "Karadeniz", value: "Karadeniz" },
-  { label: "Güneydoğu & Tarım", value: "Güneydoğu" },
-  { label: "Ege Sanayisi", value: "Ege Sanayi" },
-  { label: "Kentsel Dönüşüm", value: "Kentsel Dönüşüm" },
-  
-  // ⚽ Spor & 🎮 E-Spor
   { label: "Süper Lig", value: "Super Lig" },
-  { label: "TFF Kararları", value: "TFF" },
   { label: "Galatasaray", value: "Galatasaray" },
   { label: "Fenerbahçe", value: "Fenerbahçe" },
-  { label: "Beşiktaş", value: "Beşiktaş" },
-  { label: "Karşıyaka & Göztepe", value: "İzmir Derbisi" },
   { label: "A Milli Takım", value: "Milli Takım" },
-  { label: "EuroLeague", value: "EuroLeague" },
-  { label: "Formula 1", value: "F1" },
-  { label: "Yerli MMORPG", value: "MMORPG" },
-  { label: "Valorant VCT", value: "Valorant" },
-  { label: "CS2 Major", value: "CS2" },
-  { label: "League of Legends (TCL)", value: "LoL" },
-  { label: "Minecraft Sunucuları", value: "Minecraft" },
-  
-  // Savunma, Teknoloji & Otomotiv
   { label: "Kaan Savaş Uçağı", value: "Kaan" },
   { label: "Togg Yeni Model", value: "Togg" },
-  { label: "Bayraktar TB3 / Kızılelma", value: "Bayraktar" },
-  { label: "Türksat Uyduları", value: "Türksat" },
-  { label: "Sosyal Medya Yasakları", value: "Yasak" },
-  { label: "GPT-5 Çıkışı", value: "GPT-5" },
-  { label: "Elektrikli Araçlar (EV)", value: "Elektrikli Araç" },
-  
-  // Eğitim & Sınavlar
   { label: "YKS 2026", value: "YKS" },
-  { label: "KPSS Atamaları", value: "KPSS" },
-  { label: "Okulların Açılışı", value: "Okul" },
-  
-  // 🎬 TV, Magazin & Pop Kültür
   { label: "Survivor 2026", value: "Survivor" },
-  { label: "MasterChef", value: "MasterChef" },
-  { label: "Gibi Yeni Sezon", value: "Gibi" },
-  { label: "Yerli Diziler (Reyting)", value: "Reyting" },
-  { label: "Exxen & BluTV", value: "Dijital Platform" },
-  { label: "Türkçe Rap & Hip-Hop", value: "Türkçe Rap" },
-  { label: "Global Hip-Hop", value: "Global Hip-Hop" },
-  { label: "Konser & Festivaller", value: "Konser" },
-  { label: "Oscar Ödülleri", value: "Oscar" },
-  { label: "Gişe Rekorları", value: "Gişe" },
-  { label: "Influencer Gündemi", value: "Influencer" },
-  { label: "Sokak Modası (Streetwear)", value: "Streetwear" },
-  
-  // Kripto & Global
   { label: "Bitcoin Rekoru", value: "Bitcoin" },
-  { label: "Altcoin Rallisi", value: "Altcoin" },
-  { label: "ABD Siyaseti", value: "ABD" },
-  { label: "FED Kararları", value: "FED" },
-  { label: "Avrupa Birliği", value: "Avrupa" },
-  { label: "İklim Krizleri", value: "İklim" }
 ];
 
 export function Navbar() {
@@ -144,26 +87,21 @@ export function Navbar() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [tagSearchQuery, setTagSearchQuery] = useState("");
   const [isTagPopoverOpen, setIsTagPopoverOpen] = useState(false);
-  
-  // 1. AVATAR STATE YÖNETİMİ
   const [avatarUrl, setAvatarUrl] = useState("");
 
   const categoriesScrollRef = useRef<HTMLDivElement>(null);
   const tagsScrollRef = useRef<HTMLDivElement>(null);
 
-  // User yüklendiğinde avatarı set et
   useEffect(() => {
     if (user?.user_metadata?.avatar_url) {
       setAvatarUrl(user.user_metadata.avatar_url);
     }
   }, [user]);
 
-  // "avatar-update" sinyalini dinle ve resmi anında değiştir
   useEffect(() => {
     const handleAvatarUpdate = (e: CustomEvent) => {
       setAvatarUrl(e.detail);
     };
-    
     window.addEventListener('avatar-update', handleAvatarUpdate as EventListener);
     return () => window.removeEventListener('avatar-update', handleAvatarUpdate as EventListener);
   }, []);
@@ -198,13 +136,13 @@ export function Navbar() {
 
   const scrollCategories = (direction: 'left' | 'right') => {
     if (categoriesScrollRef.current) {
-      categoriesScrollRef.current.scrollBy({ left: direction === 'left' ? -200 : 200, behavior: 'smooth' });
+      categoriesScrollRef.current.scrollBy({ left: direction === 'left' ? -250 : 250, behavior: 'smooth' });
     }
   };
 
   const scrollTags = (direction: 'left' | 'right') => {
     if (tagsScrollRef.current) {
-      tagsScrollRef.current.scrollBy({ left: direction === 'left' ? -200 : 200, behavior: 'smooth' });
+      tagsScrollRef.current.scrollBy({ left: direction === 'left' ? -250 : 250, behavior: 'smooth' });
     }
   };
 
@@ -232,19 +170,14 @@ export function Navbar() {
             <div className="flex items-center gap-2"><div className="h-9 w-24 bg-secondary animate-pulse rounded-full hidden sm:block" /><div className="h-9 w-9 bg-secondary animate-pulse rounded-full" /></div>
           ) : user ? (
             <div className="flex items-center gap-3">
-              
               <NavbarBalance initialBalance={balance || 0} />
               <NotificationCenter userId={user.id} />
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  {/* ÖNEMLİ DÜZELTME: 'p-0' eklendi. Button'un kendi padding'i resmi sıkıştırıyordu. */}
                   <Button variant="ghost" className="relative h-9 w-9 rounded-full border border-border overflow-hidden p-0">
                     <Avatar className="h-full w-full">
-                      <AvatarImage 
-                        src={avatarUrl} 
-                        className="object-cover h-full w-full aspect-square"
-                      />
+                      <AvatarImage src={avatarUrl} className="object-cover h-full w-full aspect-square" />
                       <AvatarFallback className="font-bold">{user.email?.[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
                   </Button>
@@ -253,8 +186,12 @@ export function Navbar() {
                   <DropdownMenuItem className="md:hidden flex items-center justify-center text-primary font-black bg-primary/5 mb-1 py-3 rounded-lg">
                     <Wallet className="mr-2 h-4 w-4" /> {Math.round(balance).toLocaleString()} TP
                   </DropdownMenuItem>
-                  
                   <DropdownMenuItem asChild><Link href="/profile" className="cursor-pointer font-bold py-2"><UserIcon className="mr-2 h-4 w-4" /> Profilim</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                  <Link href="/portfolio" className="cursor-pointer font-bold py-2">
+                    <PieChart className="mr-2 h-4 w-4" /> Portfolyom
+                  </Link>
+                </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => { supabase.auth.signOut(); window.location.reload(); }} className="text-red-500 focus:text-red-600 focus:bg-red-50 py-2 font-bold cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" /> Çıkış Yap
@@ -266,7 +203,8 @@ export function Navbar() {
             <Button onClick={handleGoogleLogin} className="font-bold rounded-full px-5 shadow-lg shadow-primary/20">Giriş Yap</Button>
           )}
 
-          <div className="flex items-center">
+          {/* DÜZELTME 3: Mobil Hamburger Menü Gizlendi (hidden md:flex yapıldı) */}
+          <div className="hidden md:flex items-center">
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground rounded-full h-9 w-9 ml-1">
@@ -279,14 +217,11 @@ export function Navbar() {
                       <DropdownMenuItem asChild><Link href="/leaderboard" className="cursor-pointer font-bold py-2"><Trophy size={16} className="mr-3 text-yellow-500"/> Liderlik Tablosu</Link></DropdownMenuItem>
                       <DropdownMenuItem asChild><Link href="/rewards" className="cursor-pointer font-bold py-2"><Gift size={16} className="mr-3 text-pink-500"/> Ödüller</Link></DropdownMenuItem>
                       <DropdownMenuItem asChild><Link href="/accuracy" className="cursor-pointer font-bold py-2"><ShieldCheck size={16} className="mr-3 text-green-500"/> Doğruluk Oranı</Link></DropdownMenuItem>
-                      
                       <DropdownMenuSeparator />
-                      
                       <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground uppercase tracking-wider pl-2">Sistem & Bilgi</DropdownMenuLabel>
                       <DropdownMenuItem asChild><Link href="/help" className="cursor-pointer font-bold py-2"><HelpCircle size={16} className="mr-3 text-blue-500"/> Yardım Merkezi</Link></DropdownMenuItem>
                       <DropdownMenuItem asChild><Link href="/api-docs" className="cursor-pointer font-bold py-2"><Code size={16} className="mr-3 text-muted-foreground"/> API Dokümanı</Link></DropdownMenuItem>
                       <DropdownMenuItem asChild><Link href="/terms" className="cursor-pointer font-bold py-2"><FileCheck size={16} className="mr-3 text-muted-foreground"/> Kullanım Koşulları</Link></DropdownMenuItem>
-                      
                       <DropdownMenuSeparator />
                       <div className="p-2 flex items-center justify-between pl-3 pr-1">
                         <span className="text-sm font-bold text-muted-foreground">Tema Değiştir</span>
@@ -298,8 +233,15 @@ export function Navbar() {
         </div>
       </div>
 
+      {/* --- KATMAN 2: ANA KATEGORİLER --- */}
       <div className="border-b border-border/40 bg-background/95 relative group">
-        <button onClick={() => scrollCategories('left')} className="absolute left-0 z-10 p-2 bg-background/90 shadow-md md:hidden rounded-r-xl top-1/2 -translate-y-1/2"><ChevronLeft className="h-4 w-4" /></button>
+        {/* DÜZELTME 1: Masaüstü Sol Ok Eklendi */}
+        <div className="absolute left-0 top-0 bottom-0 items-center px-2 bg-gradient-to-r from-background via-background to-transparent w-20 justify-start z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
+          <Button variant="ghost" size="icon" className="h-8 w-8 bg-background shadow-md rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollCategories('left')}>
+            <ChevronLeft size={14} />
+          </Button>
+        </div>
+
         <div className="container mx-auto px-4 max-w-[1800px]">
           <div ref={categoriesScrollRef} className="flex items-center h-11 overflow-x-auto no-scrollbar gap-6 md:gap-8 text-sm font-medium select-none scroll-smooth">
             {MAIN_CATEGORIES.map((cat) => {
@@ -317,7 +259,13 @@ export function Navbar() {
             })}
           </div>
         </div>
-        <button onClick={() => scrollCategories('right')} className="absolute right-0 z-10 p-2 bg-background/90 shadow-md md:hidden rounded-l-xl top-1/2 -translate-y-1/2"><ChevronRight className="h-4 w-4" /></button>
+        
+        {/* DÜZELTME 1: Masaüstü Sağ Ok */}
+        <div className="absolute right-0 top-0 bottom-0 items-center px-2 bg-gradient-to-l from-background via-background to-transparent w-20 justify-end z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
+          <Button variant="ghost" size="icon" className="h-8 w-8 bg-background shadow-md rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollCategories('right')}>
+            <ChevronRight size={14} />
+          </Button>
+        </div>
       </div>
 
       <div className="md:hidden py-2 px-4 border-b border-border/40 bg-secondary/10">
@@ -327,15 +275,16 @@ export function Navbar() {
         </form>
       </div>
 
-      <div className="bg-secondary/5 py-2">
-        <div className="container mx-auto px-4 max-w-[1800px] flex items-center relative">
+      {/* --- KATMAN 4: ALT ETİKETLER VE TRENDLER --- */}
+      <div className="bg-secondary/5 border-b border-border/40">
+        <div className="container mx-auto px-4 max-w-[1800px] flex items-center gap-2 py-2">
            
-           <div ref={tagsScrollRef} className="flex items-center overflow-x-auto no-scrollbar gap-2 text-xs font-medium flex-1 scroll-smooth mask-gradient-right pr-12">
-             
+           {/* DÜZELTME 4: Arama ve Kaydettiklerim Sabitlendi (Scroll Dışına Alındı) */}
+           <div className="flex items-center gap-2 shrink-0">
              <Popover open={isTagPopoverOpen} onOpenChange={setIsTagPopoverOpen}>
                 <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-full shrink-0 border-border/50 bg-background text-muted-foreground hover:text-foreground">
-                        <Search size={12} />
+                    <Button variant="outline" size="sm" className="h-8 px-3 rounded-full border-border/50 bg-background text-muted-foreground hover:text-foreground font-bold text-xs gap-2">
+                        <Search size={14} /> <span className="hidden sm:inline-block">Trendler</span>
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="w-[300px] p-0 shadow-2xl rounded-2xl border-border/50" sideOffset={8}>
@@ -361,25 +310,39 @@ export function Navbar() {
                 </PopoverContent>
              </Popover>
 
-             <button onClick={() => { if(!user) return handleGoogleLogin(); updateParams([{ key: "watchlist", value: searchParams.get("watchlist") ? null : "true" }]); }} className={cn("px-3 py-1.5 rounded-full transition-colors whitespace-nowrap flex items-center gap-1.5 border shrink-0 ml-1 font-bold", searchParams.get("watchlist") ? "bg-yellow-500/10 text-yellow-600 border-yellow-500/30" : "bg-background border-border/50 text-muted-foreground hover:bg-secondary")}>
-                <Bookmark size={12} className={cn(searchParams.get("watchlist") && "fill-current")} /> Kaydettiklerim
+             <button onClick={() => { if(!user) return handleGoogleLogin(); updateParams([{ key: "watchlist", value: searchParams.get("watchlist") ? null : "true" }]); }} className={cn("h-8 px-3 rounded-full transition-colors whitespace-nowrap flex items-center gap-1.5 border text-xs font-bold", searchParams.get("watchlist") ? "bg-yellow-500/10 text-yellow-600 border-yellow-500/30" : "bg-background border-border/50 text-muted-foreground hover:bg-secondary")}>
+                <Bookmark size={14} className={cn(searchParams.get("watchlist") && "fill-current")} /> <span className="hidden sm:inline-block">Kaydettiklerim</span>
              </button>
+             
+             <div className="w-[1px] h-5 bg-border/50 mx-1 shrink-0" />
+           </div>
 
-             <div className="w-[1px] h-4 bg-border/50 mx-1 shrink-0" />
+           {/* KAYDIRILABİLİR ETİKETLER (DÜZELTME 2: Sol Ok Eklendi) */}
+           <div className="relative flex-1 overflow-hidden flex items-center group">
+             
+             {/* Sol Ok */}
+             <div className="absolute left-0 top-0 bottom-0 items-center pr-2 bg-gradient-to-r from-background via-background/90 to-transparent w-12 justify-start z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
+                <Button variant="ghost" size="icon" className="h-7 w-7 bg-background shadow-sm rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollTags('left')}><ChevronLeft size={14} /></Button>
+             </div>
 
-             {SUB_TOPICS.map((topic) => {
-                 const isActive = searchParams.get("q") === topic.value;
-                 return (
-                    <button key={topic.label} onClick={() => updateParams([{ key: "q", value: topic.value }, { key: "category", value: null }])} className={cn("px-3.5 py-1.5 rounded-full transition-colors whitespace-nowrap border shrink-0 font-bold", isActive || (topic.value === null && !searchParams.get("q")) ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-background border-border/50 text-muted-foreground hover:bg-secondary")}>
-                      {topic.label}
-                    </button>
-                 );
-             })}
-          </div>
-          
-          <div className="absolute right-0 top-0 bottom-0 flex items-center px-2 bg-gradient-to-l from-background via-background to-transparent w-20 justify-end z-10">
-            <Button variant="ghost" size="icon" className="h-8 w-8 bg-background shadow-md rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollTags('right')}><ChevronRight size={14} /></Button>
-          </div>
+             <div ref={tagsScrollRef} className="flex items-center overflow-x-auto no-scrollbar gap-2 text-xs font-medium w-full scroll-smooth px-1 mask-gradient-x">
+               {SUB_TOPICS.map((topic) => {
+                   const isActive = searchParams.get("q") === topic.value;
+                   return (
+                      <button key={topic.label} onClick={() => updateParams([{ key: "q", value: topic.value }, { key: "category", value: null }])} className={cn("px-3.5 py-1.5 rounded-full transition-colors whitespace-nowrap border shrink-0 font-bold", isActive || (topic.value === null && !searchParams.get("q")) ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-background border-border/50 text-muted-foreground hover:bg-secondary")}>
+                        {topic.label}
+                      </button>
+                   );
+               })}
+             </div>
+
+             {/* Sağ Ok */}
+             <div className="absolute right-0 top-0 bottom-0 items-center pl-2 bg-gradient-to-l from-background via-background/90 to-transparent w-12 justify-end z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
+                <Button variant="ghost" size="icon" className="h-7 w-7 bg-background shadow-sm rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollTags('right')}><ChevronRight size={14} /></Button>
+             </div>
+             
+           </div>
+
         </div>
       </div>
 
