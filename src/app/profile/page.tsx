@@ -173,9 +173,14 @@ export default async function ProfilePage() {
                             <span className="text-[10px] font-medium text-muted-foreground">{formatDistanceToNow(new Date(pred.created_at), { addSuffix: true, locale: tr })}</span>
                             
                             {/* MİKTAR (+ işareti ve renk) */}
-                            <span className={`font-black text-sm px-2 py-1 rounded-lg border shadow-sm ${isWon ? 'text-green-500 bg-green-500/10 border-green-500/20' : 'text-foreground bg-background border-border/50'}`}>
-                              {isWon && "+"}{Math.round(amount).toLocaleString()} TP
-                            </span>
+                            {/* MİKTAR (+/- işareti ve renk) */}
+                              <span className={`font-black text-sm px-2 py-1 rounded-lg border shadow-sm transition-colors ${
+                                isWon ? 'text-green-500 bg-green-500/10 border-green-500/20' : 
+                                isLost ? 'text-red-500 bg-red-500/10 border-red-500/20' : 
+                                'text-foreground bg-background border-border/50'
+                              }`}>
+                                {isWon ? "+" : isLost ? "-" : ""}{Math.round(amount).toLocaleString()} TP
+                              </span>
                          </div>
                       </div>
                   </Card>
