@@ -31,18 +31,20 @@ export default async function ProfilePage() {
   const predictions = predictionsData || [];
   const bookmarks = bookmarksData || [];
 
-  // MİKTAR BULUCU
+  // MİKTAR BULUCU (amount_tp eklendi)
   const getAmount = (p: any) => Number(p.amount_tp || p.amount || 0);
 
-  // FİLTRELEME
-  const activePredictions = predictions.filter(p => p.market?.status === "active");
-  const pastPredictions = predictions.filter(p => p.market?.status !== "active");
+  // FİLTRELEME (DÜZELTİLDİ: Sadece piyasa aktif olanlar VEYA sonucu henüz belli olmayanlar Açık'ta görünür)
+  const activePredictions = predictions.filter(p => p.market?.status === "active" && p.is_winner === null);
+  const pastPredictions = predictions.filter(p => p.market?.status !== "active" || p.is_winner !== null);
 
   const totalVolume = predictions.reduce((sum, p) => sum + getAmount(p), 0);
   
   // DİNAMİK DOĞRULUK ORANI HESAPLAMASI (KAZANMA/KAYBETME)
   const wonPredictions = pastPredictions.filter(p => p.is_winner === true); 
-  const accuracyRate = pastPredictions.length > 0 ? Math.round((wonPredictions.length / pastPredictions.length) * 100) : null;
+  // Toplam SONUÇLANAN maçlar üzerinden oran hesaplanıyor:
+  const resolvedPredictions = pastPredictions.filter(p => p.is_winner !== null);
+  const accuracyRate = resolvedPredictions.length > 0 ? Math.round((wonPredictions.length / resolvedPredictions.length) * 100) : null;
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 max-w-[1000px] animate-in fade-in duration-500">
@@ -73,9 +75,25 @@ export default async function ProfilePage() {
                 <div className="flex items-center gap-1.5 text-muted-foreground mb-1"><BarChart3 size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">Hacim</span></div>
                 <div className="text-xl md:text-2xl font-black text-foreground">{totalVolume.toLocaleString()} <span className="text-xs text-muted-foreground">TP</span></div>
               </div>
-              <div className={`border rounded-2xl p-4 flex flex-col items-center md:items-start transition-colors ${accuracyRate !== null && accuracyRate >= 50 ? 'bg-primary/10 border-primary/20' : 'bg-secondary/40 border-border/50'}`}>
-                <div className={`flex items-center gap-1.5 mb-1 ${accuracyRate !== null && accuracyRate >= 50 ? 'text-primary' : 'text-muted-foreground'}`}><Target size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">Doğruluk</span></div>
-                <div className={`text-xl md:text-2xl font-black ${accuracyRate !== null && accuracyRate >= 50 ? 'text-primary' : 'text-foreground'}`}>{accuracyRate !== null ? `%${accuracyRate}` : '-%'}</div>
+              {/* DİNAMİK RENKLİ DOĞRULUK KUTUSU */}
+              <div className={`border rounded-2xl p-4 flex flex-col items-center md:items-start transition-colors ${
+                accuracyRate === null ? 'bg-secondary/40 border-border/50' :
+                accuracyRate >= 60 ? 'bg-green-500/10 border-green-500/20' : 
+                accuracyRate < 40 ? 'bg-red-500/10 border-red-500/20' : 
+                'bg-yellow-500/10 border-yellow-500/20'
+              }`}>
+                <div className={`flex items-center gap-1.5 mb-1 ${
+                  accuracyRate === null ? 'text-muted-foreground' :
+                  accuracyRate >= 60 ? 'text-green-500' : 
+                  accuracyRate < 40 ? 'text-red-500' : 
+                  'text-yellow-500'
+                }`}><Target size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">Doğruluk</span></div>
+                <div className={`text-xl md:text-2xl font-black ${
+                  accuracyRate === null ? 'text-foreground' :
+                  accuracyRate >= 60 ? 'text-green-500' : 
+                  accuracyRate < 40 ? 'text-red-500' : 
+                  'text-yellow-500'
+                }`}>{accuracyRate !== null ? `%${accuracyRate}` : '-%'}</div>
               </div>
               <div className="bg-secondary/40 border border-border/50 rounded-2xl p-4 flex flex-col items-center md:items-start">
                 <div className="flex items-center gap-1.5 text-muted-foreground mb-1"><Activity size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">İşlem</span></div>
@@ -143,7 +161,7 @@ export default async function ProfilePage() {
               {pastPredictions.map((pred) => {
                 const amount = getAmount(pred);
                 
-                // --- İŞTE KAZANDI/KAYBETTİ MANTIĞI BURAYA EKLENDİ ---
+                // KAZANDI / KAYBETTİ MANTIĞI
                 const isWon = pred.is_winner === true;
                 const isLost = pred.is_winner === false;
 
@@ -168,19 +186,17 @@ export default async function ProfilePage() {
                               </Badge>
                             )}
                          </div>
-                         
                          <div className="flex items-center justify-between pt-2 border-t border-border/50">
                             <span className="text-[10px] font-medium text-muted-foreground">{formatDistanceToNow(new Date(pred.created_at), { addSuffix: true, locale: tr })}</span>
                             
-                            {/* MİKTAR (+ işareti ve renk) */}
-                            {/* MİKTAR (+/- işareti ve renk) */}
-                              <span className={`font-black text-sm px-2 py-1 rounded-lg border shadow-sm transition-colors ${
-                                isWon ? 'text-green-500 bg-green-500/10 border-green-500/20' : 
-                                isLost ? 'text-red-500 bg-red-500/10 border-red-500/20' : 
-                                'text-foreground bg-background border-border/50'
-                              }`}>
-                                {isWon ? "+" : isLost ? "-" : ""}{Math.round(amount).toLocaleString()} TP
-                              </span>
+                            {/* DİNAMİK MİKTAR KUTUSU (+/- İşaretleri ile) */}
+                            <span className={`font-black text-sm px-2 py-1 rounded-lg border shadow-sm transition-colors ${
+                              isWon ? 'text-green-500 bg-green-500/10 border-green-500/20' : 
+                              isLost ? 'text-red-500 bg-red-500/10 border-red-500/20' : 
+                              'text-foreground bg-background border-border/50'
+                            }`}>
+                              {isWon ? "+" : isLost ? "-" : ""}{Math.round(amount).toLocaleString()} TP
+                            </span>
                          </div>
                       </div>
                   </Card>

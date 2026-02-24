@@ -26,9 +26,9 @@ export default async function PortfolioPage() {
 
   const predictions = predictionsData || [];
 
-  // FİLTRELEME (Sadece piyasa aktif olanlar Açık'ta görünür)
-  const activePredictions = predictions.filter(p => p.market?.status === "active");
-  const pastPredictions = predictions.filter(p => p.market?.status !== "active");
+  // FİLTRELEME (Sadece piyasa aktif olanlar VEYA sonucu henüz belli olmayanlar Açık'ta görünür)
+  const activePredictions = predictions.filter(p => p.market?.status === "active" && p.is_winner === null);
+  const pastPredictions = predictions.filter(p => p.market?.status !== "active" || p.is_winner !== null);
 
   // AKILLI MİKTAR BULUCU
   const getAmount = (p: any) => Number(p.amount_tp || p.amount || 0);
@@ -176,15 +176,14 @@ export default async function PortfolioPage() {
                          <div className="flex items-center justify-between pt-2 border-t border-border/50">
                             <span className="text-[10px] font-medium text-muted-foreground">{formatDistanceToNow(new Date(pred.created_at), { addSuffix: true, locale: tr })}</span>
                             
-                            {/* MİKTAR (Kazandıysa yeşil ve + işareti koyar) */}
                             {/* MİKTAR (+/- işareti ve renk) */}
-                                <span className={`font-black text-sm px-2 py-1 rounded-lg border shadow-sm transition-colors ${
+                            <span className={`font-black text-sm px-2 py-1 rounded-lg border shadow-sm transition-colors ${
                                 isWon ? 'text-green-500 bg-green-500/10 border-green-500/20' : 
                                 isLost ? 'text-red-500 bg-red-500/10 border-red-500/20' : 
                                 'text-foreground bg-background border-border/50'
                                 }`}>
                                 {isWon ? "+" : isLost ? "-" : ""}{Math.round(amount).toLocaleString()} TP
-                                </span>
+                            </span>
                          </div>
                       </div>
                   </Card>
