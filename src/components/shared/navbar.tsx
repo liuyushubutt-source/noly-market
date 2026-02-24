@@ -79,7 +79,7 @@ const SUB_TOPICS = [
 export function Navbar() {
   const supabase = createClient();
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname(); // KULLANICININ HANGİ SAYFADA OLDUĞUNU ANLAR
   const searchParams = useSearchParams();
   const { user, balance, isLoading } = useBalance(); 
   
@@ -91,6 +91,7 @@ export function Navbar() {
   const categoriesScrollRef = useRef<HTMLDivElement>(null);
   const tagsScrollRef = useRef<HTMLDivElement>(null);
 
+  // Bu sayfalarda alt etiketleri gizle
   const isProfileOrPortfolio = pathname.startsWith('/profile') || pathname.startsWith('/portfolio');
 
   useEffect(() => {
@@ -168,16 +169,7 @@ export function Navbar() {
           {isLoading ? (
             <div className="flex items-center gap-2"><div className="h-9 w-24 bg-secondary animate-pulse rounded-full hidden sm:block" /><div className="h-9 w-9 bg-secondary animate-pulse rounded-full" /></div>
           ) : user ? (
-            <div className="flex items-center gap-2 md:gap-3">
-              
-              {/* YENİ: MASAÜSTÜ PORTFOLYO HIZLI ERİŞİM BUTONU */}
-              <Button asChild variant="ghost" className="hidden md:flex font-bold text-muted-foreground hover:text-foreground h-10 px-3 rounded-xl hover:bg-secondary/50 transition-all">
-                <Link href="/portfolio">
-                  <PieChart size={18} className="mr-2 text-primary" />
-                  Portfolyom
-                </Link>
-              </Button>
-
+            <div className="flex items-center gap-3">
               <NavbarBalance initialBalance={balance || 0} />
               <NotificationCenter userId={user.id} />
 
