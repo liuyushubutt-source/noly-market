@@ -19,7 +19,7 @@ import {
   User as UserIcon, ChevronRight, ChevronLeft, Bookmark, Menu, Gift, ShieldCheck, 
   Code, FileText, FileCheck, Hash, HelpCircle, Film, Rocket, Cpu, Briefcase, Music, 
   Gamepad2, Car, Home, MapPin, GraduationCap, Flame, PlaneTakeoff, ShieldAlert,
-  ArrowRight, PieChart
+  ArrowRight, PieChart, Activity
 } from "lucide-react";
 
 import { 
@@ -171,7 +171,8 @@ export function Navbar() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full border-2 border-border/50 overflow-hidden p-0 hover:border-primary/50 transition-colors hidden md:flex">
+                  {/* MOBİLDE GİZLENMEYECEK - Avatar Her Zaman Görünecek */}
+                  <Button variant="ghost" className="relative h-9 w-9 md:h-10 md:w-10 rounded-full border-2 border-border/50 overflow-hidden p-0 hover:border-primary/50 transition-colors">
                     <Avatar className="h-full w-full">
                       <AvatarImage src={avatarUrl} className="object-cover h-full w-full aspect-square" />
                       <AvatarFallback className="font-bold bg-primary text-primary-foreground">
@@ -181,29 +182,39 @@ export function Navbar() {
                   </Button>
                 </DropdownMenuTrigger>
                 
-                <DropdownMenuContent align="end" className="w-64 mt-2 rounded-[1.5rem] border-border/50 shadow-2xl p-2 bg-background/95 backdrop-blur-xl hidden md:block">
-                  <div className="flex items-center gap-3 p-3 mb-2 bg-secondary/30 rounded-xl border border-border/50">
-                     <Avatar className="h-10 w-10 border-2 border-background shadow-sm shrink-0">
-                       <AvatarImage src={avatarUrl} className="object-cover h-full w-full aspect-square" />
-                       <AvatarFallback className="font-bold bg-primary text-primary-foreground">{user.email?.[0]?.toUpperCase()}</AvatarFallback>
-                     </Avatar>
-                     <div className="flex flex-col overflow-hidden">
-                       <span className="font-black text-sm truncate">{user.user_metadata?.full_name || "Kullanıcı"}</span>
-                       <span className="text-[10px] font-medium text-muted-foreground truncate">{user.email}</span>
-                     </div>
+                {/* 4. GELİŞMİŞ WEB PROFİL MENÜSÜ (Cüzdan/Kredi Kartı Görünümü) */}
+                <DropdownMenuContent align="end" className="w-72 mt-2 rounded-[1.5rem] border-border/50 shadow-2xl p-3 bg-background/95 backdrop-blur-xl hidden md:block">
+                  
+                  {/* Premium Cüzdan Başlığı */}
+                  <div className="p-4 mb-3 bg-gradient-to-br from-primary/10 to-secondary/30 rounded-2xl border border-primary/10 flex flex-col gap-4">
+                    <div className="flex items-center gap-3">
+                       <Avatar className="h-12 w-12 border-2 border-background shadow-sm shrink-0">
+                         <AvatarImage src={avatarUrl} className="object-cover h-full w-full aspect-square" />
+                         <AvatarFallback className="font-bold bg-primary text-primary-foreground">{user.email?.[0]?.toUpperCase()}</AvatarFallback>
+                       </Avatar>
+                       <div className="flex flex-col overflow-hidden">
+                         <span className="font-black text-sm truncate">{user.user_metadata?.full_name || "Kullanıcı"}</span>
+                         <span className="text-[10px] font-medium text-muted-foreground truncate">{user.email}</span>
+                       </div>
+                    </div>
+                    
+                    <div className="bg-background/80 rounded-xl p-3 flex items-center justify-between border border-border/50 shadow-sm">
+                       <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Kullanılabilir TP</span>
+                       <span className="font-black text-primary text-base flex items-center gap-1.5"><Wallet size={16}/> {Math.round(balance).toLocaleString()}</span>
+                    </div>
                   </div>
                   
                   <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2 mb-1">Hesap İşlemleri</DropdownMenuLabel>
                   
                   <DropdownMenuItem asChild className="p-0 mb-1">
-                    <Link href="/profile" className="flex items-center w-full cursor-pointer font-bold px-3 py-2.5 rounded-xl hover:bg-secondary transition-colors text-foreground/80 hover:text-foreground">
-                      <UserIcon className="mr-3 h-4 w-4 text-primary/70" /> Profilim
+                    <Link href="/profile" className="flex items-center w-full cursor-pointer font-bold px-3 py-3 rounded-xl hover:bg-secondary transition-colors text-foreground/80 hover:text-foreground">
+                      <UserIcon className="mr-3 h-4 w-4 text-primary/70" /> Profil ve İstatistikler
                     </Link>
                   </DropdownMenuItem>
-                  
+
                   <DropdownMenuItem asChild className="p-0 mb-1">
-                    <Link href="/portfolio" className="flex items-center w-full cursor-pointer font-bold px-3 py-2.5 rounded-xl hover:bg-secondary transition-colors text-foreground/80 hover:text-foreground">
-                      <PieChart className="mr-3 h-4 w-4 text-blue-500/70" /> Portfolyom
+                    <Link href="/rewards" className="flex items-center w-full cursor-pointer font-bold px-3 py-3 rounded-xl hover:bg-secondary transition-colors text-foreground/80 hover:text-foreground">
+                      <Activity className="mr-3 h-4 w-4 text-pink-500/70" /> Görevler & Ödüller
                     </Link>
                   </DropdownMenuItem>
                   
@@ -211,7 +222,7 @@ export function Navbar() {
                   
                   <DropdownMenuItem 
                     onClick={() => { supabase.auth.signOut(); window.location.reload(); }} 
-                    className="flex items-center w-full cursor-pointer font-bold px-3 py-2.5 rounded-xl text-red-500 hover:bg-red-500/10 hover:text-red-600 transition-colors focus:bg-red-500/10 focus:text-red-600"
+                    className="flex items-center w-full cursor-pointer font-bold px-3 py-3 rounded-xl text-red-500 hover:bg-red-500/10 hover:text-red-600 transition-colors focus:bg-red-500/10 focus:text-red-600"
                   >
                     <LogOut className="mr-3 h-4 w-4" /> Çıkış Yap
                   </DropdownMenuItem>
@@ -219,20 +230,60 @@ export function Navbar() {
               </DropdownMenu>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 md:gap-2 hidden md:flex">
-              <Button onClick={handleGoogleLogin} variant="ghost" className="font-bold text-sm rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground px-4 h-10">Giriş</Button>
-              <Button onClick={handleGoogleLogin} className="font-black text-sm rounded-full px-5 h-10 shadow-lg shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 transition-all">
-                ÜYE OL <ArrowRight size={14} className="ml-1.5" />
+            // MOBİLDE GİZLENMEYECEK (Giriş Yap ve Üye Ol Her Zaman Görünecek)
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <Button 
+                onClick={handleGoogleLogin} 
+                variant="ghost" 
+                className="font-bold text-xs md:text-sm rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground px-3 md:px-4 h-9 md:h-10"
+              >
+                Giriş
+              </Button>
+              <Button 
+                onClick={handleGoogleLogin} 
+                className="font-black text-xs md:text-sm rounded-full px-4 md:px-5 h-9 md:h-10 shadow-lg shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 transition-all"
+              >
+                ÜYE OL <ArrowRight size={14} className="ml-1.5 hidden sm:block" />
               </Button>
             </div>
           )}
+
+          {/* Sadece Masaüstünde Görünen Sağ Taraf Hamburger Menü (Platform Linkleri) */}
+          <div className="hidden md:flex items-center">
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground rounded-full h-9 w-9 ml-1">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64 rounded-xl p-2 border-border/50">
+                      <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground uppercase tracking-wider pl-2">Platform</DropdownMenuLabel>
+                      <DropdownMenuItem asChild><Link href="/" className="cursor-pointer font-bold py-2"><TrendingUp size={16} className="mr-3 text-primary"/> Piyasalar</Link></DropdownMenuItem>
+                      <DropdownMenuItem asChild><Link href="/leaderboard" className="cursor-pointer font-bold py-2"><Trophy size={16} className="mr-3 text-yellow-500"/> Liderlik Tablosu</Link></DropdownMenuItem>
+                      <DropdownMenuItem asChild><Link href="/rewards" className="cursor-pointer font-bold py-2"><Gift size={16} className="mr-3 text-pink-500"/> Ödüller</Link></DropdownMenuItem>
+                      <DropdownMenuItem asChild><Link href="/accuracy" className="cursor-pointer font-bold py-2"><ShieldCheck size={16} className="mr-3 text-green-500"/> Doğruluk Oranı</Link></DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground uppercase tracking-wider pl-2">Sistem & Bilgi</DropdownMenuLabel>
+                      <DropdownMenuItem asChild><Link href="/help" className="cursor-pointer font-bold py-2"><HelpCircle size={16} className="mr-3 text-blue-500"/> Yardım Merkezi</Link></DropdownMenuItem>
+                      <DropdownMenuItem asChild><Link href="/api-docs" className="cursor-pointer font-bold py-2"><Code size={16} className="mr-3 text-muted-foreground"/> API Dokümanı</Link></DropdownMenuItem>
+                      <DropdownMenuItem asChild><Link href="/terms" className="cursor-pointer font-bold py-2"><FileCheck size={16} className="mr-3 text-muted-foreground"/> Kullanım Koşulları</Link></DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <div className="p-2 flex items-center justify-between pl-3 pr-1">
+                        <span className="text-sm font-bold text-muted-foreground">Tema Değiştir</span>
+                        <ThemeToggle />
+                      </div>
+                </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
 
       {/* --- KATMAN 2: ANA KATEGORİLER --- */}
       <div className="border-b border-border/40 bg-background/95 relative group">
         <div className="absolute left-0 top-0 bottom-0 items-center px-2 bg-gradient-to-r from-background via-background to-transparent w-20 justify-start z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
-          <Button variant="ghost" size="icon" className="h-8 w-8 bg-background shadow-md rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollCategories('left')}><ChevronLeft size={14} /></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 bg-background shadow-md rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollCategories('left')}>
+            <ChevronLeft size={14} />
+          </Button>
         </div>
 
         <div className="container mx-auto px-4 max-w-[1800px]">
@@ -254,19 +305,13 @@ export function Navbar() {
         </div>
         
         <div className="absolute right-0 top-0 bottom-0 items-center px-2 bg-gradient-to-l from-background via-background to-transparent w-20 justify-end z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
-          <Button variant="ghost" size="icon" className="h-8 w-8 bg-background shadow-md rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollCategories('right')}><ChevronRight size={14} /></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 bg-background shadow-md rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollCategories('right')}>
+            <ChevronRight size={14} />
+          </Button>
         </div>
       </div>
 
-      {/* MOBİL ANA ARAMA (INPUT ZOOM ENGELLENDİ) */}
-      <div className="md:hidden py-2 px-4 border-b border-border/40 bg-secondary/10">
-         <form onSubmit={handleSearch} className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input type="search" placeholder="Piyasalarda ara..." className="w-full pl-10 h-12 bg-background border-border/50 focus:border-primary/50 transition-all rounded-xl text-[16px] shadow-sm" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-        </form>
-      </div>
-
-      {/* --- KATMAN 4: ALT ETİKETLER (MOBİLDE GÖRÜNÜR, ARAMA GİZLİ) --- */}
+      {/* --- KATMAN 4: ALT ETİKETLER (MOBİLDE TAMAMEN GÖRÜNÜR) --- */}
       <div className="bg-secondary/5 border-b border-border/40">
         <div className="container mx-auto px-4 max-w-[1800px] flex items-center justify-between gap-2 py-2">
            
@@ -299,7 +344,7 @@ export function Navbar() {
              </div>
            </div>
 
-           {/* SAĞ KISIM: Trendler Butonu (SADECE MASAÜSTÜ) */}
+           {/* SAĞ KISIM: Trendler Butonu (SADECE MASAÜSTÜ - Mobilde zaten Keşfet ekranında var) */}
            <div className="shrink-0 border-l border-border/50 pl-2 hidden md:block">
              <Popover open={isTagPopoverOpen} onOpenChange={setIsTagPopoverOpen}>
                 <PopoverTrigger asChild>

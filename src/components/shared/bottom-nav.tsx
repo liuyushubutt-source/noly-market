@@ -9,7 +9,6 @@ import {
   Twitter, Instagram, MessageCircle, Hash, Wallet, TrendingUp, X 
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ThemeToggle } from "./theme-toggle";
 import { HowItWorks } from "./how-it-works"; 
 import { useBalance } from "@/context/balance-context";
@@ -69,24 +68,21 @@ export function BottomNav() {
     <>
       <HowItWorks isFloating={true} />
 
-      {/* --- TAM EKRAN ARAMA MODALI (Klavye Dostu & Zoom Önleyici) --- */}
-      <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-        <DialogContent className="fixed inset-0 z-[100] w-full h-[100dvh] max-w-none m-0 p-0 rounded-none border-none bg-background flex flex-col pt-safe animate-in fade-in slide-in-from-bottom-2">
-          <DialogTitle className="sr-only">Arama</DialogTitle>
-          
-          <div className="flex items-center gap-2 p-3 border-b border-border/50 bg-secondary/10">
-            <form onSubmit={handleSearch} className="flex-1 relative flex items-center bg-background border border-border/50 rounded-xl px-3 h-12 shadow-sm">
+      {/* 1. KUSURSUZ TAM EKRAN ARAMA (Ekran kararma hatası çözüldü) */}
+      {isSearchOpen && (
+        <div className="fixed inset-0 z-[99999] bg-background flex flex-col animate-in slide-in-from-bottom-full duration-300">
+          <div className="flex items-center gap-3 p-4 border-b border-border/50 bg-secondary/10 pt-safe">
+            <form onSubmit={handleSearch} className="flex-1 relative flex items-center bg-background border-2 border-primary/20 rounded-2xl px-3 h-14 shadow-sm focus-within:border-primary transition-colors">
                <Search className="h-5 w-5 text-muted-foreground shrink-0" />
-               {/* text-[16px] iOS Zoom sorununu engeller */}
                <Input 
                  autoFocus
                  placeholder="Etiket, soru veya piyasa ara..." 
-                 className="border-none shadow-none focus-visible:ring-0 text-[16px] flex-1 bg-transparent px-2 h-full" 
+                 className="border-none shadow-none focus-visible:ring-0 text-[16px] font-medium flex-1 bg-transparent px-3 h-full" 
                  value={searchQuery} 
                  onChange={(e) => setSearchQuery(e.target.value)} 
                />
             </form>
-            <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(false)} className="shrink-0 h-12 w-12 rounded-xl">
+            <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(false)} className="shrink-0 h-14 w-12 rounded-2xl bg-secondary/50">
               <X className="h-6 w-6" />
             </Button>
           </div>
@@ -94,13 +90,13 @@ export function BottomNav() {
           <div className="flex-1 overflow-y-auto p-5 space-y-6">
             <div>
               <h4 className="text-[11px] font-black text-muted-foreground uppercase mb-4 tracking-widest flex items-center gap-1.5">
-                <TrendingUp size={14} className="text-primary" /> Popüler Etiketler
+                <TrendingUp size={16} className="text-primary" /> Popüler Aramalar
               </h4>
               <div className="flex flex-wrap gap-2.5">
                 {TRENDING_TAGS.map(t => (
                     <Button 
                       key={t.label} variant="secondary" size="sm" 
-                      className="h-10 text-sm px-4 font-bold rounded-xl bg-secondary/40 hover:bg-secondary border border-transparent transition-all" 
+                      className="h-11 text-sm px-5 font-bold rounded-xl bg-secondary/40 hover:bg-secondary border border-border/50 transition-all" 
                       onClick={() => navigateToTag(t.value)}
                     >
                         <Hash size={16} className="mr-1.5 opacity-50 text-primary"/> {t.label}
@@ -109,8 +105,8 @@ export function BottomNav() {
               </div>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
 
       {/* --- MOBİL ALT MENÜ ÇUBUĞU --- */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/50 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
@@ -152,9 +148,9 @@ export function BottomNav() {
                 </SheetTitle>
               </SheetHeader>
               
-              {/* ÜST İÇERİK: Linkler ve Kullanıcı Profili (Giriş Yapmışsa) */}
               <div className="flex-1 overflow-y-auto p-5 space-y-6">
                 
+                {/* Giriş yapmış kullanıcı kartı */}
                 {user && (
                   <div className="bg-secondary/30 p-4 rounded-2xl border border-border/50 space-y-4">
                     <div className="flex items-center gap-3">
@@ -192,31 +188,31 @@ export function BottomNav() {
                 </div>
               </div>
 
-              {/* ALT İÇERİK (Footer Alanı): Giriş Butonları ve Sosyal Medya EN ALTA SABİTLENDİ */}
-              <div className="p-5 border-t border-border/50 bg-secondary/10 space-y-5 mt-auto pb-safe">
-                
-                {/* Giriş Yapmamışsa Giriş Butonları En Altta */}
-                {!user && (
-                  <div className="flex flex-col gap-2 pb-5 border-b border-border/50">
-                    <Button onClick={handleGoogleLogin} className="w-full font-black h-12 rounded-xl shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground text-sm">
-                      ÜYE OL VEYA GİRİŞ YAP
-                    </Button>
-                  </div>
-                )}
-
+              {/* ALT KISIM (Sosyal Medya ve Giriş Butonları) */}
+              <div className="p-5 border-t border-border/50 bg-secondary/10 space-y-6 mt-auto pb-safe">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-muted-foreground">Tema Seçimi</span>
                   <ThemeToggle />
                 </div>
                 
-                {/* Sosyal Medya Simgeleri */}
-                <div className="flex items-center justify-center gap-4 pt-1">
-                  <a href="https://twitter.com" target="_blank" rel="noreferrer" className="p-2.5 bg-background border border-border/50 rounded-full text-muted-foreground hover:text-[#1DA1F2] hover:border-[#1DA1F2] transition-colors shadow-sm"><Twitter size={20} /></a>
-                  <a href="https://instagram.com" target="_blank" rel="noreferrer" className="p-2.5 bg-background border border-border/50 rounded-full text-muted-foreground hover:text-[#E1306C] hover:border-[#E1306C] transition-colors shadow-sm"><Instagram size={20} /></a>
-                  <a href="https://discord.com" target="_blank" rel="noreferrer" className="p-2.5 bg-background border border-border/50 rounded-full text-muted-foreground hover:text-[#5865F2] hover:border-[#5865F2] transition-colors shadow-sm"><MessageCircle size={20} /></a>
+                {/* 2. SOSYAL MEDYA SİMGELERİ BÜYÜTÜLDÜ VE RENKLENDİRİLDİ */}
+                <div className="flex items-center justify-center gap-5 pt-2">
+                  <a href="https://twitter.com" target="_blank" rel="noreferrer" className="p-3 bg-[#1DA1F2]/10 text-[#1DA1F2] border border-[#1DA1F2]/20 rounded-full hover:bg-[#1DA1F2] hover:text-white transition-all shadow-sm"><Twitter size={24} /></a>
+                  <a href="https://instagram.com" target="_blank" rel="noreferrer" className="p-3 bg-[#E1306C]/10 text-[#E1306C] border border-[#E1306C]/20 rounded-full hover:bg-[#E1306C] hover:text-white transition-all shadow-sm"><Instagram size={24} /></a>
+                  <a href="https://discord.com" target="_blank" rel="noreferrer" className="p-3 bg-[#5865F2]/10 text-[#5865F2] border border-[#5865F2]/20 rounded-full hover:bg-[#5865F2] hover:text-white transition-all shadow-sm"><MessageCircle size={24} /></a>
                 </div>
 
-                {user && (
+                {/* 3. İKİ AYRI GİRİŞ/ÜYE OL BUTONU (En Alta) */}
+                {!user ? (
+                  <div className="flex flex-col gap-3 pt-4 border-t border-border/50">
+                    <Button onClick={handleGoogleLogin} className="w-full font-black h-12 rounded-xl shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground text-sm">
+                      ÜYE OL
+                    </Button>
+                    <Button onClick={handleGoogleLogin} variant="outline" className="w-full font-bold h-12 rounded-xl border-border/50 bg-background text-sm">
+                      Giriş Yap
+                    </Button>
+                  </div>
+                ) : (
                   <Button 
                     variant="ghost" 
                     className="w-full text-red-500 hover:text-red-600 hover:bg-red-500/10 font-bold mt-2 h-10 rounded-xl"
