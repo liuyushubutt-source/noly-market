@@ -154,7 +154,7 @@ export function Navbar() {
         <div className="flex items-center gap-4 md:gap-6 flex-1">
           <Link href="/" className="flex items-center space-x-1 sm:space-x-2 font-black text-[16px] sm:text-xl tracking-tighter shrink-0 hover:opacity-80 transition-opacity">
             <span className="text-xl sm:text-2xl">📉</span>
-            <span>NOLYMARKET</span>
+            <span>TAHMİN PİYASALARI</span>
           </Link>
           
           <form onSubmit={handleSearch} className="hidden md:flex relative flex-1 max-w-lg">
