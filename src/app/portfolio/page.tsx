@@ -1,6 +1,6 @@
 import { createServerSideClient } from "@/lib/server-utils";
 import { redirect } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -26,11 +26,9 @@ export default async function PortfolioPage() {
 
   const predictions = predictionsData || [];
 
-  // FİLTRELEME (Sadece piyasa aktif olanlar VEYA sonucu henüz belli olmayanlar Açık'ta görünür)
   const activePredictions = predictions.filter(p => p.market?.status === "active" && p.is_winner === null);
   const pastPredictions = predictions.filter(p => p.market?.status !== "active" || p.is_winner !== null);
 
-  // AKILLI MİKTAR BULUCU
   const getAmount = (p: any) => Number(p.amount_tp || p.amount || 0);
 
   const availableBalance = Number(profile?.tp_balance) || 0;
@@ -123,10 +121,6 @@ export default async function PortfolioPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="bg-secondary/20 px-4 py-2 flex items-center justify-between text-[9px] font-bold text-muted-foreground">
-                         <span className="flex items-center gap-1"><Clock size={10}/> Bitiş: {new Date(pred.market?.end_date).toLocaleDateString('tr-TR')}</span>
-                         <span className="flex items-center gap-1 group-hover:text-primary transition-colors">Göz At <ArrowRight size={10}/></span>
-                      </div>
                     </Card>
                   </Link>
                 );
@@ -146,37 +140,36 @@ export default async function PortfolioPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {pastPredictions.map((pred) => {
                 const amount = getAmount(pred);
-                
-                // --- İŞTE SİHRİN OLDUĞU YER (KAZANDI/KAYBETTİ MANTIĞI) ---
                 const isWon = pred.is_winner === true;
                 const isLost = pred.is_winner === false;
                 
+                // KULLANICININ SEÇİMİNİ BULUYORUZ (YENİ EKLENDİ)
+                const isBinary = pred.market?.market_type === 'binary';
+                const isYes = isBinary && (pred.side === 'YES' || pred.side === 'yes');
+                const optionLabel = isBinary ? (isYes ? 'EVET' : 'HAYIR') : (pred.market_option?.name || `Seçenek`);
+
                 return (
                   <Card key={pred.id} className="rounded-3xl border border-border/50 opacity-90 hover:opacity-100 transition-opacity bg-secondary/5">
-                      <div className="p-4 md:p-5 space-y-3">
-                         <div className="flex justify-between items-start gap-3">
+                      <div className="p-4 md:p-5 flex flex-col h-full">
+                         <div className="flex justify-between items-start gap-3 mb-3">
                             <h3 className="text-xs md:text-sm font-bold leading-snug text-muted-foreground line-clamp-2">{pred.market?.question}</h3>
-                            
-                            {/* ROZETLER */}
                             {isWon ? (
-                              <Badge className="bg-green-500 hover:bg-green-600 text-[9px] font-black shrink-0 px-2 py-0.5 flex items-center gap-1">
-                                <CheckCircle2 size={12}/> KAZANDI
-                              </Badge>
+                              <Badge className="bg-green-500 hover:bg-green-600 text-[9px] font-black shrink-0 px-2 py-0.5 flex items-center gap-1"><CheckCircle2 size={12}/> KAZANDI</Badge>
                             ) : isLost ? (
-                              <Badge variant="destructive" className="text-[9px] font-black shrink-0 px-2 py-0.5 flex items-center gap-1">
-                                <XCircle size={12}/> KAYBETTİ
-                              </Badge>
+                              <Badge variant="destructive" className="text-[9px] font-black shrink-0 px-2 py-0.5 flex items-center gap-1"><XCircle size={12}/> KAYBETTİ</Badge>
                             ) : (
-                              <Badge variant="outline" className="text-[9px] font-black shrink-0 px-2 py-0.5 bg-background">
-                                SONUÇLANDI
-                              </Badge>
+                              <Badge variant="outline" className="text-[9px] font-black shrink-0 px-2 py-0.5 bg-background">SONUÇLANDI</Badge>
                             )}
                          </div>
+
+                         {/* SEÇİLEN TAHMİN KISMI (YENİ EKLENDİ) */}
+                         <div className="bg-background rounded-xl p-2.5 mb-3 border border-border/50 flex items-center justify-between">
+                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-black">Senin Tahminin</span>
+                            <span className={`text-xs font-black ${isBinary ? (isYes ? 'text-green-500' : 'text-red-500') : 'text-primary'}`}>{optionLabel}</span>
+                         </div>
                          
-                         <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                         <div className="flex items-center justify-between pt-2 border-t border-border/50 mt-auto">
                             <span className="text-[10px] font-medium text-muted-foreground">{formatDistanceToNow(new Date(pred.created_at), { addSuffix: true, locale: tr })}</span>
-                            
-                            {/* MİKTAR (+/- işareti ve renk) */}
                             <span className={`font-black text-sm px-2 py-1 rounded-lg border shadow-sm transition-colors ${
                                 isWon ? 'text-green-500 bg-green-500/10 border-green-500/20' : 
                                 isLost ? 'text-red-500 bg-red-500/10 border-red-500/20' : 
