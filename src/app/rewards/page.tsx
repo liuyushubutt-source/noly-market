@@ -17,23 +17,20 @@ export default async function RewardsPage() {
   let completedQuests: string[] = []; 
 
   if (user) {
-    // 1. Bakiyeyi Çek
     const { data: profile } = await supabase.from("profiles").select("tp_balance").eq("id", user.id).single();
-    tpBalance = profile?.tp_balance || 0;
+    tpBalance = profile?.tp_balance ?? 0; // Güvenli null kontrolü
 
-    // 2. Tamamlanmış (Ödülü Alınmış) Görevleri Çek
     const { data: userQuests } = await supabase.from("user_quests").select("quest_id").eq("user_id", user.id);
-    completedQuests = userQuests?.map(q => q.quest_id) || [];
+    // Eğer userQuests null gelirse hata vermemesi için dizi kontrolü
+    completedQuests = Array.isArray(userQuests) ? userQuests.map(q => q.quest_id) : [];
   }
 
-  // GÖREV LİSTESİ (Gerçek id'ler backend ile aynı olmalı)
   const quests = [
     { id: "first_prediction", title: "İlk Öngörünü Yap", desc: "Herhangi bir piyasada ilk pozisyonunu al.", reward: 500, icon: Target, isCompleted: completedQuests.includes("first_prediction"), actionText: "Piyasalara Git", link: "/" },
     { id: "first_comment", title: "Tartışmaya Katıl", desc: "Bir piyasanın tartışma panosunda mantıklı bir yorum bırak.", reward: 150, icon: MessageSquare, isCompleted: completedQuests.includes("first_comment"), actionText: "Piyasalara Git", link: "/" },
     { id: "profile_complete", title: "Profilini Tamamla", desc: "Kendine havalı bir isim ve avatar seç.", reward: 300, icon: Crown, isCompleted: completedQuests.includes("profile_complete"), actionText: "Profiline Git", link: "/profile" },
   ];
 
-  // MAĞAZA
   const rewards = [
     { title: "Noly Özel Avatar Çerçevesi", cost: 5000, icon: Crown, color: "text-yellow-500", bg: "bg-yellow-500/10" },
     { title: "Koyu Tema 'Pro' Rozeti", cost: 15000, icon: Zap, color: "text-blue-500", bg: "bg-blue-500/10" },
@@ -44,7 +41,6 @@ export default async function RewardsPage() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 max-w-[1000px] animate-in fade-in slide-in-from-bottom-4 duration-500">
       
-      {/* BAŞLIK & BAKİYE KARTI */}
       <div className="bg-gradient-to-br from-card to-secondary/30 border border-border/50 rounded-[2.5rem] p-6 md:p-10 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 mb-10 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-pink-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         
@@ -102,15 +98,18 @@ export default async function RewardsPage() {
           </TabsTrigger>
         </TabsList>
 
-        {/* 1. SEKME: GÖREVLER */}
         <TabsContent value="quests" className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {quests.map((quest) => (
+            {quests.map((quest) => {
+              // REACT STANDARDI: Render hatası almamak için ikonu büyük harfli değişkene atıyoruz
+              const QuestIcon = quest.icon;
+              
+              return (
               <div key={quest.id} className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col justify-between h-full ${quest.isCompleted ? 'bg-secondary/10 border-border/30 opacity-70' : 'bg-card border-border/50 hover:border-primary/40 shadow-sm'}`}>
                 
                 <div className="flex items-start gap-4 mb-6">
                   <div className={`p-3 rounded-2xl shrink-0 ${quest.isCompleted ? 'bg-secondary text-muted-foreground' : 'bg-primary/10 text-primary'}`}>
-                    <quest.icon size={24} />
+                    <QuestIcon size={24} />
                   </div>
                   <div className="space-y-1">
                     <h3 className="font-bold text-lg leading-tight">{quest.title}</h3>
@@ -123,7 +122,6 @@ export default async function RewardsPage() {
                     +{quest.reward} <span className="text-[10px] uppercase text-muted-foreground">TP</span>
                   </div>
                   
-                  {/* AKSİYON BUTONLARI */}
                   <div className="flex items-center gap-2">
                     {!quest.isCompleted && (
                       <Button asChild variant="ghost" size="sm" className="font-bold text-muted-foreground hover:text-foreground hidden sm:flex">
@@ -131,22 +129,21 @@ export default async function RewardsPage() {
                       </Button>
                     )}
                     
-                    {/* YENİ: Gerçekten çalışan ödül butonu */}
                     <QuestButton questId={quest.id} reward={quest.reward} isCompleted={quest.isCompleted} />
                   </div>
                 </div>
 
               </div>
-            ))}
+            )})}
           </div>
         </TabsContent>
 
-        {/* 2. SEKME: MAĞAZA */}
         <TabsContent value="store" className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {rewards.map((reward, i) => {
               const progress = user ? Math.min((tpBalance / reward.cost) * 100, 100) : 0;
               const canAfford = progress === 100;
+              const RewardIcon = reward.icon;
 
               return (
                 <div key={i} className="bg-card border-2 border-border/50 rounded-[2rem] p-6 shadow-sm hover:border-primary/30 transition-all flex flex-col h-full relative overflow-hidden group">
@@ -159,7 +156,7 @@ export default async function RewardsPage() {
 
                   <div className="flex items-start gap-4 mb-6">
                     <div className={`p-4 rounded-2xl shrink-0 ${reward.bg} border border-border/10`}>
-                       <reward.icon className={`${reward.color} h-8 w-8`} />
+                       <RewardIcon className={`${reward.color} h-8 w-8`} />
                     </div>
                     <div className="space-y-1 pt-1">
                       <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Gereken</p>
@@ -175,7 +172,6 @@ export default async function RewardsPage() {
                       <span className={canAfford ? 'text-green-500 font-black' : ''}>%{Math.floor(progress)}</span>
                     </div>
                     
-                    {/* Düzeltilmiş Progress Bar */}
                     <Progress value={progress} className={`h-2.5 ${canAfford ? 'bg-green-500/20' : ''}`} indicatorColor={canAfford ? 'bg-green-500' : ''} />
                     
                     <Button 
