@@ -6,7 +6,7 @@ import { useState } from "react";
 import { 
   Home, Search, Flame, Menu, PieChart, User, Trophy, 
   Gift, ShieldCheck, Code, FileText, FileCheck, LogOut, 
-  Twitter, Instagram, MessageCircle, Hash 
+  Twitter, Instagram, MessageCircle, Hash, Wallet, TrendingUp 
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
