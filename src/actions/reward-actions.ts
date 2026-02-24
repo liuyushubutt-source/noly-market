@@ -8,47 +8,56 @@ export async function claimQuestReward(questId: string, rewardAmount: number) {
     const supabase = await createServerSideClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) return { error: "Giriş yapmalısın." };
+    if (!user) return { error: "Giriş yapmalısınız." };
 
-    // 1. Kullanıcı bu ödülü zaten almış mı kontrolü
-    const { data: existing } = await supabase
+    // 1. ADIM: Zaten almış mı? (Kesin Kontrol)
+    const { data: alreadyClaimed } = await supabase
       .from("user_quests")
-      .select("*")
+      .select("id")
       .eq("user_id", user.id)
       .eq("quest_id", questId)
       .maybeSingle();
 
-    if (existing) return { error: "Bu ödül zaten alınmış." };
-
-    // 2. Ödülü user_quests tablosuna kaydet
-    const { error: insertError } = await supabase.from("user_quests").insert({
-      user_id: user.id,
-      quest_id: questId,
-      reward_tp: rewardAmount
-    });
-
-    if (insertError) {
-        console.error("Ödül Kayıt Hatası:", insertError.message);
-        return { error: "Ödül kaydedilemedi: " + insertError.message };
+    if (alreadyClaimed) {
+      return { error: "Bu ödülü zaten aldınız." };
     }
 
-    // 3. Cüzdana TP ekle (RPC fonksiyonun)
-    // DİKKAT: p_amount veya p_amount_tp isimlendirmesine dikkat et!
+    // 2. ADIM: Tabloya kayıt at (Bu adım başarısız olursa para yatmayacak)
+    const { error: insertError } = await supabase
+      .from("user_quests")
+      .insert({
+        user_id: user.id,
+        quest_id: questId,
+        reward_tp: rewardAmount
+      });
+
+    // Eğer tabloya yazamazsa (Örn: Tablo yoksa veya bağlantı hatası varsa) işlemi durdur!
+    if (insertError) {
+      console.error("GÖREV KAYIT HATASI:", insertError.message);
+      return { error: "Sistem şu an meşgul, lütfen az sonra tekrar deneyin." };
+    }
+
+    // 3. ADIM: Sadece kayıt başarılıysa parayı yatır
     const { error: rpcError } = await supabase.rpc('add_tp', {
       p_user_id: user.id,
-      p_amount: Number(rewardAmount)
+      p_amount: Math.floor(rewardAmount) // Tam sayı olduğundan emin olalım
     });
 
     if (rpcError) {
-        console.error("TP Ekleme Hatası:", rpcError.message);
-        return { error: "Bakiye eklenemedi." };
+      // Eğer para yatmazsa, yukarıda attığımız kaydı geri silmeliyiz (opsiyonel ama güvenli)
+      await supabase.from("user_quests").delete().eq("user_id", user.id).eq("quest_id", questId);
+      console.error("TP YATIRMA HATASI:", rpcError.message);
+      return { error: "Bakiye güncellenirken bir hata oluştu." };
     }
 
+    // 4. ADIM: Başarı bildirimi ve sayfa yenileme
     revalidatePath("/rewards");
+    revalidatePath("/portfolio");
+    
     return { success: true };
 
-  } catch (err: any) {
-    console.error("Beklenmeyen Hata:", err);
-    return { error: "Sunucu tarafında bir hata oluştu." };
+  } catch (err) {
+    console.error("BEKLENMEYEN HATA:", err);
+    return { error: "Sunucu bağlantısı koptu." };
   }
 }
