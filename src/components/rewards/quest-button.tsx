@@ -4,17 +4,19 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { claimQuestReward } from "@/actions/reward-actions";
 import { toast } from "sonner";
-import { Loader2, Gift, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2, Gift } from "lucide-react";
+import { useBalance } from "@/context/balance-context";
 import { useRouter } from "next/navigation";
 
 export function QuestButton({ questId, reward, isCompleted }: { questId: string, reward: number, isCompleted: boolean }) {
   const [loading, setLoading] = useState(false);
+  const { refreshBalance } = useBalance();
   const router = useRouter();
 
   if (isCompleted) {
     return (
-      <Button disabled variant="outline" className="font-bold border-green-500/30 text-green-600 bg-green-500/5 h-10 px-5">
-        <CheckCircle2 size={16} className="mr-2"/> Alındı
+      <Button disabled variant="secondary" className="font-black text-green-500 bg-green-500/10 opacity-100 h-10 px-4">
+        <CheckCircle2 size={18} className="mr-2" /> ALINDI
       </Button>
     );
   }
@@ -22,23 +24,28 @@ export function QuestButton({ questId, reward, isCompleted }: { questId: string,
   const handleClaim = async () => {
     setLoading(true);
     try {
-      await claimQuestReward(questId, reward);
-      toast.success(`Tebrikler! ${reward} TP kazandın! 🎉`);
+      // HATA AYIKLAMA: Terminale (F12 > Console) bak, ne gönderiyor gör.
+      console.log("Ödül talebi gönderiliyor:", questId);
+
+      const res = await claimQuestReward(questId, reward);
       
-      // Bakiye göstergelerini (Navbar) anında güncellemek için sinyal gönder
-      window.dispatchEvent(new CustomEvent('tp-update', { detail: reward }));
-      router.refresh();
-      
-    } catch (error: any) {
-      toast.error(error.message); // Örn: "Henüz profilini doldurmamışsın."
+      if (res?.error) {
+        toast.error(res.error);
+      } else {
+        toast.success(`${reward} TP Eklendi!`);
+        refreshBalance();
+        router.refresh(); // Sayfayı yenileyerek 'ALINDI' yazmasını tetikler
+      }
+    } catch (err) {
+      toast.error("Bağlantı hatası.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Button onClick={handleClaim} disabled={loading} variant="default" className="font-bold h-10 px-5 shadow-sm bg-primary text-primary-foreground">
-      {loading ? <Loader2 className="animate-spin h-4 w-4" /> : <><Gift size={16} className="mr-2" /> Ödülü Al</>}
+    <Button onClick={handleClaim} disabled={loading} className="font-black h-10 px-4">
+      {loading ? <Loader2 className="animate-spin" /> : <><Gift size={16} className="mr-2" /> ÖDÜLÜ AL</>}
     </Button>
   );
 }
