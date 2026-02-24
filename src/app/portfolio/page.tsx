@@ -26,23 +26,12 @@ export default async function PortfolioPage() {
 
   const predictions = predictionsData || [];
 
-  // 1. KURŞUN GEÇİRMEZ FİLTRELEME (Piyasa durumu VEYA tahminin sonucu üzerinden)
-  const activePredictions = predictions.filter(p => 
-    p.market?.status === "active" && 
-    p.status !== "won" && 
-    p.status !== "lost" && 
-    p.is_winner === null
-  );
+  // FİLTRELEME (Sadece piyasa aktif olanlar Açık'ta görünür)
+  const activePredictions = predictions.filter(p => p.market?.status === "active");
+  const pastPredictions = predictions.filter(p => p.market?.status !== "active");
 
-  const pastPredictions = predictions.filter(p => 
-    p.market?.status !== "active" || 
-    p.status === "won" || 
-    p.status === "lost" || 
-    p.is_winner !== null
-  );
-
-  // 2. AKILLI MİKTAR BULUCU (Supabase sütun adın neyse onu yakalar)
-  const getAmount = (p: any) => Number(p.amount || p.tp_amount || p.investment || p.shares || 0);
+  // AKILLI MİKTAR BULUCU (Artık amount_tp'yi okuyacak!)
+  const getAmount = (p: any) => Number(p.amount_tp || p.amount || 0);
 
   const availableBalance = Number(profile?.tp_balance) || 0;
   const lockedBalance = activePredictions.reduce((sum, p) => sum + getAmount(p), 0);
@@ -106,14 +95,16 @@ export default async function PortfolioPage() {
           </TabsTrigger>
         </TabsList>
 
+        {/* 1. SEKME: AÇIK İŞLEMLER */}
         <TabsContent value="positions" className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
           {activePredictions.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {activePredictions.map((pred) => {
                 const isBinary = pred.market?.market_type === 'binary';
-                const optionLabel = isBinary ? (pred.option_id === 'yes' || pred.option_id === 'YES' ? 'EVET' : 'HAYIR') : (pred.market_option?.name || `Seçenek ${pred.option_id}`);
-                const isYes = optionLabel === 'EVET';
-                const amount = getAmount(pred); // Akıllı miktar fonksiyonunu kullandık
+                // SIDE SÜTUNU ÇÖZÜMÜ EKLENDİ
+                const isYes = isBinary && (pred.side === 'YES' || pred.side === 'yes');
+                const optionLabel = isBinary ? (isYes ? 'EVET' : 'HAYIR') : (pred.market_option?.name || `Seçenek`);
+                const amount = getAmount(pred); 
 
                 return (
                   <Link key={pred.id} href={`/market/${pred.market?.slug}`} className="block group">
@@ -144,7 +135,6 @@ export default async function PortfolioPage() {
               })}
             </div>
           ) : (
-             // ... Boş Durum Ekranı Aynı ...
              <div className="text-center py-24 bg-secondary/10 rounded-[2.5rem] border-2 border-dashed border-border/50">
                <Briefcase className="mx-auto h-16 w-16 text-muted-foreground/30 mb-4" />
                <h3 className="text-xl font-black mb-2">Açık Pozisyonun Yok</h3>
@@ -153,20 +143,21 @@ export default async function PortfolioPage() {
           )}
         </TabsContent>
 
+        {/* 2. SEKME: GEÇMİŞ İŞLEMLER */}
         <TabsContent value="history" className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
           {pastPredictions.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {pastPredictions.map((pred) => {
-                const isWon = pred.status === "won" || pred.is_winner === true;
-                const isLost = pred.status === "lost" || pred.is_winner === false;
-                const amount = getAmount(pred); // Akıllı miktar fonksiyonunu kullandık
-
+                const amount = getAmount(pred);
+                // Not: predictions tablosunda statü olmadığı için şimdilik "SONUÇLANDI" gösteriyoruz.
+                // Eğer SQL'de "won/lost" mantığı eklenirse buralar otomatik renklenecek.
+                
                 return (
                   <Card key={pred.id} className="rounded-3xl border border-border/50 opacity-90 hover:opacity-100 transition-opacity bg-secondary/5">
                       <div className="p-4 md:p-5 space-y-3">
                          <div className="flex justify-between items-start gap-3">
                             <h3 className="text-xs md:text-sm font-bold leading-snug text-muted-foreground line-clamp-2">{pred.market?.question}</h3>
-                            {isWon ? <Badge className="bg-green-500 hover:bg-green-600 text-[9px] font-black shrink-0 px-2 py-0.5">KAZANDI</Badge> : isLost ? <Badge variant="destructive" className="text-[9px] font-black shrink-0 px-2 py-0.5">KAYBETTİ</Badge> : <Badge variant="outline" className="text-[9px] font-black shrink-0 px-2 py-0.5">SONUÇLANDI</Badge>}
+                            <Badge variant="outline" className="text-[9px] font-black shrink-0 px-2 py-0.5 bg-background">SONUÇLANDI</Badge>
                          </div>
                          <div className="flex items-center justify-between pt-2 border-t border-border/50">
                             <span className="text-[10px] font-medium text-muted-foreground">{formatDistanceToNow(new Date(pred.created_at), { addSuffix: true, locale: tr })}</span>

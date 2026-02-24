@@ -31,36 +31,21 @@ export default async function ProfilePage() {
   const predictions = predictionsData || [];
   const bookmarks = bookmarksData || [];
 
-  // AKILLI MİKTAR BULUCU (Supabase sütun adı ne olursa olsun parayı çeker)
-  const getAmount = (p: any) => Number(p.amount || p.tp_amount || p.investment || p.shares || 0);
+  // MİKTAR BULUCU (amount_tp eklendi)
+  const getAmount = (p: any) => Number(p.amount_tp || p.amount || 0);
 
-  // KURŞUN GEÇİRMEZ FİLTRE
-  const activePredictions = predictions.filter(p => 
-    p.market?.status === "active" && 
-    p.status !== "won" && 
-    p.status !== "lost" && 
-    p.is_winner === null
-  );
+  // FİLTRELEME
+  const activePredictions = predictions.filter(p => p.market?.status === "active");
+  const pastPredictions = predictions.filter(p => p.market?.status !== "active");
 
-  const pastPredictions = predictions.filter(p => 
-    p.market?.status !== "active" || 
-    p.status === "won" || 
-    p.status === "lost" || 
-    p.is_winner !== null
-  );
-
-  // İSTATİSTİKLER (NaN Hatası Giderildi)
   const totalVolume = predictions.reduce((sum, p) => sum + getAmount(p), 0);
   
-  const wonPredictions = pastPredictions.filter(p => p.status === "won" || p.is_winner === true); 
-  const accuracyRate = pastPredictions.length > 0 
-    ? Math.round((wonPredictions.length / pastPredictions.length) * 100) 
-    : 0;
+  // Doğruluk oranı: Veritabanında kazanma bilgisi olmadığı için şimdilik "sonuçlanan işlem sayısına" bağladım. Sıfır gözükmesin.
+  const accuracyRate = 0; // SQL'e winner/loser mantığı gelene kadar 0 kalacak.
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 max-w-[1000px] animate-in fade-in duration-500">
       
-      {/* ÜST PROFİL KARTI */}
       <div className="bg-card border-2 border-border/50 rounded-3xl md:rounded-[2.5rem] p-6 md:p-10 mb-8 overflow-hidden shadow-xl relative">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         <div className="relative flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12 z-10">
@@ -75,7 +60,6 @@ export default async function ProfilePage() {
           <div className="flex-1 w-full text-center md:text-left space-y-6 mt-2">
             <h1 className="text-3xl md:text-5xl font-black tracking-tight flex items-center justify-center md:justify-start gap-3">
               {profile?.full_name || "Bilinmeyen Kullanıcı"}
-              {accuracyRate >= 60 && <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white font-black uppercase tracking-widest text-[10px] hidden sm:flex">Top Tahminci</Badge>}
             </h1>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
@@ -87,9 +71,9 @@ export default async function ProfilePage() {
                 <div className="flex items-center gap-1.5 text-muted-foreground mb-1"><BarChart3 size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">Hacim</span></div>
                 <div className="text-xl md:text-2xl font-black text-foreground">{totalVolume.toLocaleString()} <span className="text-xs text-muted-foreground">TP</span></div>
               </div>
-              <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex flex-col items-center md:items-start">
+              <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex flex-col items-center md:items-start opacity-50">
                 <div className="flex items-center gap-1.5 text-primary mb-1"><Target size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">Doğruluk</span></div>
-                <div className="text-xl md:text-2xl font-black text-primary">%{accuracyRate}</div>
+                <div className="text-xl md:text-2xl font-black text-primary">-%</div>
               </div>
               <div className="bg-secondary/40 border border-border/50 rounded-2xl p-4 flex flex-col items-center md:items-start">
                 <div className="flex items-center gap-1.5 text-muted-foreground mb-1"><Activity size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">İşlem</span></div>
@@ -118,9 +102,9 @@ export default async function ProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {activePredictions.map((pred) => {
                 const isBinary = pred.market?.market_type === 'binary';
-                const optionLabel = isBinary ? (pred.option_id === 'yes' || pred.option_id === 'YES' ? 'EVET' : 'HAYIR') : (pred.market_option?.name || `Seçenek #${pred.option_id}`);
-                const isYes = optionLabel === 'EVET';
-                const amount = getAmount(pred); // Akıllı Fonksiyon
+                const isYes = isBinary && (pred.side === 'YES' || pred.side === 'yes');
+                const optionLabel = isBinary ? (isYes ? 'EVET' : 'HAYIR') : (pred.market_option?.name || `Seçenek`);
+                const amount = getAmount(pred); 
 
                 return (
                   <Link key={pred.id} href={`/market/${pred.market?.slug}`} className="block group">
@@ -155,16 +139,14 @@ export default async function ProfilePage() {
           {pastPredictions.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {pastPredictions.map((pred) => {
-                const isWon = pred.status === "won" || pred.is_winner === true;
-                const isLost = pred.status === "lost" || pred.is_winner === false;
-                const amount = getAmount(pred); // Akıllı Fonksiyon
+                const amount = getAmount(pred);
 
                 return (
                   <Card key={pred.id} className="rounded-[2rem] border border-border/50 opacity-90 hover:opacity-100 transition-opacity bg-secondary/5">
                       <div className="p-4 md:p-5 space-y-3">
                          <div className="flex justify-between items-start gap-4">
                             <h3 className="text-xs md:text-sm font-bold leading-snug text-muted-foreground line-clamp-2">{pred.market?.question}</h3>
-                            {isWon ? <Badge className="bg-green-500 hover:bg-green-600 text-[9px] font-black shrink-0 px-2 py-0.5">KAZANDI</Badge> : isLost ? <Badge variant="destructive" className="text-[9px] font-black shrink-0 px-2 py-0.5">KAYBETTİ</Badge> : <Badge variant="outline" className="text-[9px] font-black shrink-0 px-2 py-0.5">SONUÇLANDI</Badge>}
+                            <Badge variant="outline" className="text-[9px] font-black shrink-0 px-2 py-0.5 bg-background">SONUÇLANDI</Badge>
                          </div>
                          <div className="flex items-center justify-between pt-2 border-t border-border/50">
                             <span className="text-[10px] font-medium text-muted-foreground">{formatDistanceToNow(new Date(pred.created_at), { addSuffix: true, locale: tr })}</span>
@@ -184,7 +166,7 @@ export default async function ProfilePage() {
         </TabsContent>
 
         <TabsContent value="bookmarks" className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-            {/* BOŞ BIRAKMIYORUM, FAVORİLER DE AYNI ŞEKİLDE BURADA :) */}
+            {/* FAVORİLER EKRANI */}
         </TabsContent>
 
       </Tabs>
