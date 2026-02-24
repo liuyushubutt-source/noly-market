@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase";
 import { useBalance } from "@/context/balance-context";
@@ -79,6 +79,7 @@ const SUB_TOPICS = [
 export function Navbar() {
   const supabase = createClient();
   const router = useRouter();
+  const pathname = usePathname(); // KULLANICININ HANGİ SAYFADA OLDUĞUNU ANLAR
   const searchParams = useSearchParams();
   const { user, balance, isLoading } = useBalance(); 
   
@@ -89,6 +90,9 @@ export function Navbar() {
 
   const categoriesScrollRef = useRef<HTMLDivElement>(null);
   const tagsScrollRef = useRef<HTMLDivElement>(null);
+
+  // Bu sayfalarda alt etiketleri gizle
+  const isProfileOrPortfolio = pathname.startsWith('/profile') || pathname.startsWith('/portfolio');
 
   useEffect(() => {
     if (user?.user_metadata?.avatar_url) {
@@ -263,40 +267,42 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* --- KATMAN 2: ANA KATEGORİLER --- */}
-      <div className="border-b border-border/40 bg-background/95 relative group">
-        <div className="absolute left-0 top-0 bottom-0 items-center px-2 bg-gradient-to-r from-background via-background to-transparent w-20 justify-start z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
-          <Button variant="ghost" size="icon" className="h-8 w-8 bg-background shadow-md rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollCategories('left')}>
-            <ChevronLeft size={14} />
-          </Button>
-        </div>
+      {/* --- KATMAN 2: ANA KATEGORİLER (Sadece anasayfadaysa göster) --- */}
+      {!isProfileOrPortfolio && (
+        <div className="border-b border-border/40 bg-background/95 relative group">
+          <div className="absolute left-0 top-0 bottom-0 items-center px-2 bg-gradient-to-r from-background via-background to-transparent w-20 justify-start z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
+            <Button variant="ghost" size="icon" className="h-8 w-8 bg-background shadow-md rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollCategories('left')}>
+              <ChevronLeft size={14} />
+            </Button>
+          </div>
 
-        <div className="container mx-auto px-4 max-w-[1800px]">
-          <div ref={categoriesScrollRef} className="flex items-center h-11 overflow-x-auto no-scrollbar gap-6 md:gap-8 text-sm font-medium select-none scroll-smooth">
-            {MAIN_CATEGORIES.map((cat) => {
-              const isActive = (cat.value === searchParams.get("category")) || (!searchParams.get("category") && cat.value === "popular" && !searchParams.get("q"));
-              return (
-                <button
-                  key={cat.label}
-                  onClick={() => updateParams([{ key: "category", value: cat.value === "popular" ? null : cat.value }, { key: "q", value: null }])}
-                  className={cn("whitespace-nowrap flex items-center gap-1.5 transition-all h-full border-b-[2px] px-1", isActive ? "text-foreground font-bold border-foreground" : "text-muted-foreground hover:text-foreground border-transparent")}
-                >
-                  {cat.icon && <cat.icon size={14} className={cn(isActive ? "text-foreground" : "text-muted-foreground/70")} />}
-                  {cat.label}
-                </button>
-              );
-            })}
+          <div className="container mx-auto px-4 max-w-[1800px]">
+            <div ref={categoriesScrollRef} className="flex items-center h-11 overflow-x-auto no-scrollbar gap-6 md:gap-8 text-sm font-medium select-none scroll-smooth">
+              {MAIN_CATEGORIES.map((cat) => {
+                const isActive = (cat.value === searchParams.get("category")) || (!searchParams.get("category") && cat.value === "popular" && !searchParams.get("q"));
+                return (
+                  <button
+                    key={cat.label}
+                    onClick={() => updateParams([{ key: "category", value: cat.value === "popular" ? null : cat.value }, { key: "q", value: null }])}
+                    className={cn("whitespace-nowrap flex items-center gap-1.5 transition-all h-full border-b-[2px] px-1", isActive ? "text-foreground font-bold border-foreground" : "text-muted-foreground hover:text-foreground border-transparent")}
+                  >
+                    {cat.icon && <cat.icon size={14} className={cn(isActive ? "text-foreground" : "text-muted-foreground/70")} />}
+                    {cat.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          
+          <div className="absolute right-0 top-0 bottom-0 items-center px-2 bg-gradient-to-l from-background via-background to-transparent w-20 justify-end z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
+            <Button variant="ghost" size="icon" className="h-8 w-8 bg-background shadow-md rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollCategories('right')}>
+              <ChevronRight size={14} />
+            </Button>
           </div>
         </div>
-        
-        <div className="absolute right-0 top-0 bottom-0 items-center px-2 bg-gradient-to-l from-background via-background to-transparent w-20 justify-end z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
-          <Button variant="ghost" size="icon" className="h-8 w-8 bg-background shadow-md rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollCategories('right')}>
-            <ChevronRight size={14} />
-          </Button>
-        </div>
-      </div>
+      )}
 
-      {/* MOBİL ANA ARAMA - (KALDIRILMADI, ZOOM ENGELLENDİ) */}
+      {/* MOBİL ANA ARAMA */}
       <div className="md:hidden py-2 px-4 border-b border-border/40 bg-secondary/10">
          <form onSubmit={handleSearch} className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -304,73 +310,74 @@ export function Navbar() {
         </form>
       </div>
 
-      {/* --- KATMAN 4: ALT ETİKETLER --- */}
-      <div className="bg-secondary/5 border-b border-border/40">
-        <div className="container mx-auto px-4 max-w-[1800px] flex items-center justify-between gap-2 py-2">
-           
-           <div className="flex items-center gap-2 flex-1 overflow-hidden pr-2">
-             <button onClick={() => { if(!user) return handleGoogleLogin(); updateParams([{ key: "watchlist", value: searchParams.get("watchlist") ? null : "true" }]); }} className={cn("h-8 px-3 rounded-full transition-colors whitespace-nowrap flex items-center gap-1.5 border text-xs font-bold shrink-0", searchParams.get("watchlist") ? "bg-yellow-500/10 text-yellow-600 border-yellow-500/30" : "bg-background border-border/50 text-muted-foreground hover:bg-secondary")}>
-                <Bookmark size={14} className={cn(searchParams.get("watchlist") && "fill-current")} /> <span className="hidden sm:inline-block">Kaydettiklerim</span>
-             </button>
+      {/* --- KATMAN 4: ALT ETİKETLER (Sadece anasayfadaysa göster) --- */}
+      {!isProfileOrPortfolio && (
+        <div className="bg-secondary/5 border-b border-border/40">
+          <div className="container mx-auto px-4 max-w-[1800px] flex items-center justify-between gap-2 py-2">
              
-             <div className="w-[1px] h-5 bg-border/50 mx-1 shrink-0" />
+             <div className="flex items-center gap-2 flex-1 overflow-hidden pr-2">
+               <button onClick={() => { if(!user) return handleGoogleLogin(); updateParams([{ key: "watchlist", value: searchParams.get("watchlist") ? null : "true" }]); }} className={cn("h-8 px-3 rounded-full transition-colors whitespace-nowrap flex items-center gap-1.5 border text-xs font-bold shrink-0", searchParams.get("watchlist") ? "bg-yellow-500/10 text-yellow-600 border-yellow-500/30" : "bg-background border-border/50 text-muted-foreground hover:bg-secondary")}>
+                  <Bookmark size={14} className={cn(searchParams.get("watchlist") && "fill-current")} /> <span className="hidden sm:inline-block">Kaydettiklerim</span>
+               </button>
+               
+               <div className="w-[1px] h-5 bg-border/50 mx-1 shrink-0" />
 
-             <div className="relative flex-1 overflow-hidden flex items-center group">
-               <div className="absolute left-0 top-0 bottom-0 items-center pr-2 bg-gradient-to-r from-background via-background/90 to-transparent w-12 justify-start z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
-                  <Button variant="ghost" size="icon" className="h-7 w-7 bg-background shadow-sm rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollTags('left')}><ChevronLeft size={14} /></Button>
-               </div>
+               <div className="relative flex-1 overflow-hidden flex items-center group">
+                 <div className="absolute left-0 top-0 bottom-0 items-center pr-2 bg-gradient-to-r from-background via-background/90 to-transparent w-12 justify-start z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
+                    <Button variant="ghost" size="icon" className="h-7 w-7 bg-background shadow-sm rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollTags('left')}><ChevronLeft size={14} /></Button>
+                 </div>
 
-               <div ref={tagsScrollRef} className="flex items-center overflow-x-auto no-scrollbar gap-2 text-xs font-medium w-full scroll-smooth px-1 mask-gradient-x">
-                 {SUB_TOPICS.map((topic) => {
-                     const isActive = searchParams.get("q") === topic.value;
-                     return (
-                        <button key={topic.label} onClick={() => updateParams([{ key: "q", value: topic.value }, { key: "category", value: null }])} className={cn("px-3.5 py-1.5 rounded-full transition-colors whitespace-nowrap border shrink-0 font-bold", isActive || (topic.value === null && !searchParams.get("q")) ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-background border-border/50 text-muted-foreground hover:bg-secondary")}>
-                          {topic.label}
-                        </button>
-                     );
-                 })}
-               </div>
+                 <div ref={tagsScrollRef} className="flex items-center overflow-x-auto no-scrollbar gap-2 text-xs font-medium w-full scroll-smooth px-1 mask-gradient-x">
+                   {SUB_TOPICS.map((topic) => {
+                       const isActive = searchParams.get("q") === topic.value;
+                       return (
+                          <button key={topic.label} onClick={() => updateParams([{ key: "q", value: topic.value }, { key: "category", value: null }])} className={cn("px-3.5 py-1.5 rounded-full transition-colors whitespace-nowrap border shrink-0 font-bold", isActive || (topic.value === null && !searchParams.get("q")) ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-background border-border/50 text-muted-foreground hover:bg-secondary")}>
+                            {topic.label}
+                          </button>
+                       );
+                   })}
+                 </div>
 
-               <div className="absolute right-0 top-0 bottom-0 items-center pl-2 bg-gradient-to-l from-background via-background/90 to-transparent w-12 justify-end z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
-                  <Button variant="ghost" size="icon" className="h-7 w-7 bg-background shadow-sm rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollTags('right')}><ChevronRight size={14} /></Button>
+                 <div className="absolute right-0 top-0 bottom-0 items-center pl-2 bg-gradient-to-l from-background via-background/90 to-transparent w-12 justify-end z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
+                    <Button variant="ghost" size="icon" className="h-7 w-7 bg-background shadow-sm rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollTags('right')}><ChevronRight size={14} /></Button>
+                 </div>
                </div>
              </div>
-           </div>
 
-           {/* Trendler Butonu (SADECE MASAÜSTÜ) */}
-           <div className="shrink-0 border-l border-border/50 pl-2 hidden md:block">
-             <Popover open={isTagPopoverOpen} onOpenChange={setIsTagPopoverOpen}>
-                <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8 px-3 rounded-full border-border/50 bg-background text-muted-foreground hover:text-foreground font-bold text-xs gap-2">
-                        <Search size={14} /> <span>Trendler</span>
-                    </Button>
-                </PopoverTrigger>
-                <PopoverContent align="end" className="w-[300px] p-0 shadow-2xl rounded-2xl border-border/50" sideOffset={8}>
-                    <form onSubmit={handleTagSearch} className="p-3 border-b border-border/50 bg-secondary/20">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input autoFocus placeholder="Etiket veya soru ara..." className="pl-9 h-10 bg-background border-border/50 rounded-xl focus-visible:ring-1 focus-visible:ring-primary shadow-sm text-[16px]" value={tagSearchQuery} onChange={(e) => setTagSearchQuery(e.target.value)} />
-                        </div>
-                    </form>
-                    <div className="p-4 max-h-[300px] overflow-y-auto no-scrollbar">
-                        <h4 className="text-[10px] font-black text-muted-foreground uppercase mb-3 tracking-widest flex items-center gap-1"><TrendingUp size={10} /> Trend Etiketler</h4>
-                        <div className="flex flex-wrap gap-2">
-                            {SUB_TOPICS.filter(t => t.value !== null).map(t => (
-                                <Button 
-                                  key={t.label} variant="secondary" size="sm" className="h-7 text-[11px] px-3 font-bold rounded-lg bg-secondary/50 hover:bg-secondary border border-transparent hover:border-border/50 transition-all" 
-                                  onClick={() => { setTagSearchQuery(t.value!); setIsTagPopoverOpen(false); updateParams([{ key: "q", value: t.value }, { key: "category", value: null }]); }}
-                                >
-                                    <Hash size={12} className="mr-1 opacity-50 text-primary"/> {t.label}
-                                </Button>
-                            ))}
-                        </div>
-                    </div>
-                </PopoverContent>
-             </Popover>
-           </div>
+             <div className="shrink-0 border-l border-border/50 pl-2 hidden md:block">
+               <Popover open={isTagPopoverOpen} onOpenChange={setIsTagPopoverOpen}>
+                  <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 px-3 rounded-full border-border/50 bg-background text-muted-foreground hover:text-foreground font-bold text-xs gap-2">
+                          <Search size={14} /> <span>Trendler</span>
+                      </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-[300px] p-0 shadow-2xl rounded-2xl border-border/50" sideOffset={8}>
+                      <form onSubmit={handleTagSearch} className="p-3 border-b border-border/50 bg-secondary/20">
+                          <div className="relative">
+                              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input autoFocus placeholder="Etiket veya soru ara..." className="pl-9 h-10 bg-background border-border/50 rounded-xl focus-visible:ring-1 focus-visible:ring-primary shadow-sm text-[16px]" value={tagSearchQuery} onChange={(e) => setTagSearchQuery(e.target.value)} />
+                          </div>
+                      </form>
+                      <div className="p-4 max-h-[300px] overflow-y-auto no-scrollbar">
+                          <h4 className="text-[10px] font-black text-muted-foreground uppercase mb-3 tracking-widest flex items-center gap-1"><TrendingUp size={10} /> Trend Etiketler</h4>
+                          <div className="flex flex-wrap gap-2">
+                              {SUB_TOPICS.filter(t => t.value !== null).map(t => (
+                                  <Button 
+                                    key={t.label} variant="secondary" size="sm" className="h-7 text-[11px] px-3 font-bold rounded-lg bg-secondary/50 hover:bg-secondary border border-transparent hover:border-border/50 transition-all" 
+                                    onClick={() => { setTagSearchQuery(t.value!); setIsTagPopoverOpen(false); updateParams([{ key: "q", value: t.value }, { key: "category", value: null }]); }}
+                                  >
+                                      <Hash size={12} className="mr-1 opacity-50 text-primary"/> {t.label}
+                                  </Button>
+                              ))}
+                          </div>
+                      </div>
+                  </PopoverContent>
+               </Popover>
+             </div>
 
+          </div>
         </div>
-      </div>
+      )}
 
     </div>
   );
