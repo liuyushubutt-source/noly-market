@@ -30,24 +30,24 @@ import {
   Popover, PopoverContent, PopoverTrigger
 } from "@/components/ui/popover";
 
-// --- KATMAN 2: ANA KATEGORİLER (Tüm Türkiye ve Global Vizyon) ---
+// --- KATMAN 2: ANA KATEGORİLER (Emojiler Temizlendi, Sadece İkonlar Kaldı) ---
 const MAIN_CATEGORIES = [
-  { label: "🔥 Popüler", value: "popular", icon: Flame },
-  { label: "⚡ Yeni", value: "new", icon: Zap },
-  { label: "🇹🇷 Türkiye Gündemi", value: "Türkiye", icon: MapPin },
-  { label: "🏛️ Siyaset & Seçim", value: "Siyaset", icon: Landmark },
-  { label: "📈 Ekonomi & Finans", value: "Ekonomi", icon: Briefcase },
-  { label: "⚽ Spor", value: "Spor", icon: Trophy },
-  { label: "🛡️ Savunma Sanayii", value: "Savunma", icon: ShieldAlert },
-  { label: "₿ Kripto Varlıklar", value: "Kripto", icon: Coins },
-  { label: "💻 Teknoloji & Yapay Zeka", value: "Teknoloji", icon: Cpu },
-  { label: "🚗 Otomotiv & Ulaşım", value: "Otomotiv", icon: Car },
-  { label: "🏠 Emlak & Konut", value: "Emlak", icon: Home },
-  { label: "📚 Eğitim & Sınavlar", value: "Eğitim", icon: GraduationCap },
-  { label: "✈️ Turizm & Seyahat", value: "Turizm", icon: PlaneTakeoff },
-  { label: "🎬 Magazin & TV", value: "Magazin", icon: Film },
-  { label: "🚀 Bilim & Uzay", value: "Bilim", icon: Rocket },
-  { label: "🌍 Dünya Gündemi", value: "Dünya", icon: Globe },
+  { label: "Popüler", value: "popular", icon: Flame },
+  { label: "Yeni", value: "new", icon: Zap },
+  { label: "Türkiye Gündemi", value: "Türkiye", icon: MapPin },
+  { label: "Siyaset & Seçim", value: "Siyaset", icon: Landmark },
+  { label: "Ekonomi & Finans", value: "Ekonomi", icon: Briefcase },
+  { label: "Spor", value: "Spor", icon: Trophy },
+  { label: "Savunma Sanayii", value: "Savunma", icon: ShieldAlert },
+  { label: "Kripto Varlıklar", value: "Kripto", icon: Coins },
+  { label: "Teknoloji & Yapay Zeka", value: "Teknoloji", icon: Cpu },
+  { label: "Otomotiv & Ulaşım", value: "Otomotiv", icon: Car },
+  { label: "Emlak & Konut", value: "Emlak", icon: Home },
+  { label: "Eğitim & Sınavlar", value: "Eğitim", icon: GraduationCap },
+  { label: "Turizm & Seyahat", value: "Turizm", icon: PlaneTakeoff },
+  { label: "Magazin & TV", value: "Magazin", icon: Film },
+  { label: "Bilim & Uzay", value: "Bilim", icon: Rocket },
+  { label: "Dünya Gündemi", value: "Dünya", icon: Globe },
 ];
 
 // --- KATMAN 4: ALT ETİKETLER ---
@@ -185,10 +185,7 @@ export function Navbar() {
                   </Button>
                 </DropdownMenuTrigger>
                 
-                {/* GÜNCELLENMİŞ, ŞIK PROFİL MENÜSÜ */}
                 <DropdownMenuContent align="end" className="w-64 mt-2 rounded-[1.5rem] border-border/50 shadow-2xl p-2 bg-background/95 backdrop-blur-xl">
-                  
-                  {/* Kullanıcı Kartı Başlığı */}
                   <div className="flex items-center gap-3 p-3 mb-2 bg-secondary/30 rounded-xl border border-border/50">
                      <Avatar className="h-10 w-10 border-2 border-background shadow-sm shrink-0">
                        <AvatarImage src={avatarUrl} className="object-cover h-full w-full aspect-square" />
@@ -200,7 +197,6 @@ export function Navbar() {
                      </div>
                   </div>
 
-                  {/* Mobil Bakiye Görünümü */}
                   <DropdownMenuItem className="md:hidden flex items-center justify-between text-primary font-black bg-primary/5 mb-2 p-3 rounded-xl cursor-default focus:bg-primary/5">
                     <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Cüzdan</span>
                     <span className="flex items-center gap-1.5"><Wallet className="h-4 w-4" /> {Math.round(balance).toLocaleString()} TP</span>
@@ -232,18 +228,18 @@ export function Navbar() {
               </DropdownMenu>
             </div>
           ) : (
-            // GÜNCELLENMİŞ KAYIT OL / GİRİŞ YAP ALANI
-            <div className="flex items-center gap-2">
+            // GÜNCELLENMİŞ MİSAFİR ALANI (MOBİL UYUMLU GİRİŞ/ÜYE OL)
+            <div className="flex items-center gap-1.5 md:gap-2">
               <Button 
                 onClick={handleGoogleLogin} 
                 variant="ghost" 
-                className="hidden sm:flex font-bold rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground px-4"
+                className="font-bold text-xs md:text-sm rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground px-3 md:px-4 h-9 md:h-10"
               >
-                Giriş Yap
+                Giriş
               </Button>
               <Button 
                 onClick={handleGoogleLogin} 
-                className="font-black rounded-full px-5 shadow-lg shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 transition-all"
+                className="font-black text-xs md:text-sm rounded-full px-4 md:px-5 h-9 md:h-10 shadow-lg shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 transition-all"
               >
                 ÜYE OL <ArrowRight size={14} className="ml-1.5 hidden sm:block" />
               </Button>
@@ -319,18 +315,49 @@ export function Navbar() {
         </form>
       </div>
 
-      {/* --- KATMAN 4: ALT ETİKETLER VE TRENDLER --- */}
-      <div className="bg-secondary/5 border-b border-border/40">
-        <div className="container mx-auto px-4 max-w-[1800px] flex items-center gap-2 py-2">
+      {/* --- KATMAN 4: ALT ETİKETLER VE TRENDLER (TRENDLER SAĞA ALINDI) --- */}
+      <div className="hidden md:block bg-secondary/5 border-b border-border/40">
+        <div className="container mx-auto px-4 max-w-[1800px] flex items-center justify-between gap-2 py-2">
            
-           <div className="flex items-center gap-2 shrink-0">
+           {/* SOL KISIM: Kaydettiklerim + Kaydırılabilir Etiketler */}
+           <div className="flex items-center gap-2 flex-1 overflow-hidden pr-2">
+             <button onClick={() => { if(!user) return handleGoogleLogin(); updateParams([{ key: "watchlist", value: searchParams.get("watchlist") ? null : "true" }]); }} className={cn("h-8 px-3 rounded-full transition-colors whitespace-nowrap flex items-center gap-1.5 border text-xs font-bold shrink-0", searchParams.get("watchlist") ? "bg-yellow-500/10 text-yellow-600 border-yellow-500/30" : "bg-background border-border/50 text-muted-foreground hover:bg-secondary")}>
+                <Bookmark size={14} className={cn(searchParams.get("watchlist") && "fill-current")} /> <span className="hidden sm:inline-block">Kaydettiklerim</span>
+             </button>
+             
+             <div className="w-[1px] h-5 bg-border/50 mx-1 shrink-0" />
+
+             <div className="relative flex-1 overflow-hidden flex items-center group">
+               <div className="absolute left-0 top-0 bottom-0 items-center pr-2 bg-gradient-to-r from-background via-background/90 to-transparent w-12 justify-start z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
+                  <Button variant="ghost" size="icon" className="h-7 w-7 bg-background shadow-sm rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollTags('left')}><ChevronLeft size={14} /></Button>
+               </div>
+
+               <div ref={tagsScrollRef} className="flex items-center overflow-x-auto no-scrollbar gap-2 text-xs font-medium w-full scroll-smooth px-1 mask-gradient-x">
+                 {SUB_TOPICS.map((topic) => {
+                     const isActive = searchParams.get("q") === topic.value;
+                     return (
+                        <button key={topic.label} onClick={() => updateParams([{ key: "q", value: topic.value }, { key: "category", value: null }])} className={cn("px-3.5 py-1.5 rounded-full transition-colors whitespace-nowrap border shrink-0 font-bold", isActive || (topic.value === null && !searchParams.get("q")) ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-background border-border/50 text-muted-foreground hover:bg-secondary")}>
+                          {topic.label}
+                        </button>
+                     );
+                 })}
+               </div>
+
+               <div className="absolute right-0 top-0 bottom-0 items-center pl-2 bg-gradient-to-l from-background via-background/90 to-transparent w-12 justify-end z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
+                  <Button variant="ghost" size="icon" className="h-7 w-7 bg-background shadow-sm rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollTags('right')}><ChevronRight size={14} /></Button>
+               </div>
+             </div>
+           </div>
+
+           {/* SAĞ KISIM: Trendler (Arama Butonu) */}
+           <div className="shrink-0 border-l border-border/50 pl-2">
              <Popover open={isTagPopoverOpen} onOpenChange={setIsTagPopoverOpen}>
                 <PopoverTrigger asChild>
                     <Button variant="outline" size="sm" className="h-8 px-3 rounded-full border-border/50 bg-background text-muted-foreground hover:text-foreground font-bold text-xs gap-2">
                         <Search size={14} /> <span className="hidden sm:inline-block">Trendler</span>
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent align="start" className="w-[300px] p-0 shadow-2xl rounded-2xl border-border/50" sideOffset={8}>
+                <PopoverContent align="end" className="w-[300px] p-0 shadow-2xl rounded-2xl border-border/50" sideOffset={8}>
                     <form onSubmit={handleTagSearch} className="p-3 border-b border-border/50 bg-secondary/20">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -352,35 +379,6 @@ export function Navbar() {
                     </div>
                 </PopoverContent>
              </Popover>
-
-             <button onClick={() => { if(!user) return handleGoogleLogin(); updateParams([{ key: "watchlist", value: searchParams.get("watchlist") ? null : "true" }]); }} className={cn("h-8 px-3 rounded-full transition-colors whitespace-nowrap flex items-center gap-1.5 border text-xs font-bold", searchParams.get("watchlist") ? "bg-yellow-500/10 text-yellow-600 border-yellow-500/30" : "bg-background border-border/50 text-muted-foreground hover:bg-secondary")}>
-                <Bookmark size={14} className={cn(searchParams.get("watchlist") && "fill-current")} /> <span className="hidden sm:inline-block">Kaydettiklerim</span>
-             </button>
-             
-             <div className="w-[1px] h-5 bg-border/50 mx-1 shrink-0" />
-           </div>
-
-           <div className="relative flex-1 overflow-hidden flex items-center group">
-             
-             <div className="absolute left-0 top-0 bottom-0 items-center pr-2 bg-gradient-to-r from-background via-background/90 to-transparent w-12 justify-start z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
-                <Button variant="ghost" size="icon" className="h-7 w-7 bg-background shadow-sm rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollTags('left')}><ChevronLeft size={14} /></Button>
-             </div>
-
-             <div ref={tagsScrollRef} className="flex items-center overflow-x-auto no-scrollbar gap-2 text-xs font-medium w-full scroll-smooth px-1 mask-gradient-x">
-               {SUB_TOPICS.map((topic) => {
-                   const isActive = searchParams.get("q") === topic.value;
-                   return (
-                      <button key={topic.label} onClick={() => updateParams([{ key: "q", value: topic.value }, { key: "category", value: null }])} className={cn("px-3.5 py-1.5 rounded-full transition-colors whitespace-nowrap border shrink-0 font-bold", isActive || (topic.value === null && !searchParams.get("q")) ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-background border-border/50 text-muted-foreground hover:bg-secondary")}>
-                        {topic.label}
-                      </button>
-                   );
-               })}
-             </div>
-
-             <div className="absolute right-0 top-0 bottom-0 items-center pl-2 bg-gradient-to-l from-background via-background/90 to-transparent w-12 justify-end z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
-                <Button variant="ghost" size="icon" className="h-7 w-7 bg-background shadow-sm rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollTags('right')}><ChevronRight size={14} /></Button>
-             </div>
-             
            </div>
 
         </div>
