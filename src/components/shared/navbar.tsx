@@ -171,7 +171,6 @@ export function Navbar() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  {/* MOBİLDE GİZLENMEYECEK - Avatar Her Zaman Görünecek */}
                   <Button variant="ghost" className="relative h-9 w-9 md:h-10 md:w-10 rounded-full border-2 border-border/50 overflow-hidden p-0 hover:border-primary/50 transition-colors">
                     <Avatar className="h-full w-full">
                       <AvatarImage src={avatarUrl} className="object-cover h-full w-full aspect-square" />
@@ -182,10 +181,7 @@ export function Navbar() {
                   </Button>
                 </DropdownMenuTrigger>
                 
-                {/* 4. GELİŞMİŞ WEB PROFİL MENÜSÜ (Cüzdan/Kredi Kartı Görünümü) */}
                 <DropdownMenuContent align="end" className="w-72 mt-2 rounded-[1.5rem] border-border/50 shadow-2xl p-3 bg-background/95 backdrop-blur-xl hidden md:block">
-                  
-                  {/* Premium Cüzdan Başlığı */}
                   <div className="p-4 mb-3 bg-gradient-to-br from-primary/10 to-secondary/30 rounded-2xl border border-primary/10 flex flex-col gap-4">
                     <div className="flex items-center gap-3">
                        <Avatar className="h-12 w-12 border-2 border-background shadow-sm shrink-0">
@@ -230,25 +226,14 @@ export function Navbar() {
               </DropdownMenu>
             </div>
           ) : (
-            // MOBİLDE GİZLENMEYECEK (Giriş Yap ve Üye Ol Her Zaman Görünecek)
             <div className="flex items-center gap-1.5 md:gap-2">
-              <Button 
-                onClick={handleGoogleLogin} 
-                variant="ghost" 
-                className="font-bold text-xs md:text-sm rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground px-3 md:px-4 h-9 md:h-10"
-              >
-                Giriş
-              </Button>
-              <Button 
-                onClick={handleGoogleLogin} 
-                className="font-black text-xs md:text-sm rounded-full px-4 md:px-5 h-9 md:h-10 shadow-lg shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 transition-all"
-              >
+              <Button onClick={handleGoogleLogin} variant="ghost" className="font-bold text-xs md:text-sm rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground px-3 md:px-4 h-9 md:h-10">Giriş</Button>
+              <Button onClick={handleGoogleLogin} className="font-black text-xs md:text-sm rounded-full px-4 md:px-5 h-9 md:h-10 shadow-lg shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 transition-all">
                 ÜYE OL <ArrowRight size={14} className="ml-1.5 hidden sm:block" />
               </Button>
             </div>
           )}
 
-          {/* Sadece Masaüstünde Görünen Sağ Taraf Hamburger Menü (Platform Linkleri) */}
           <div className="hidden md:flex items-center">
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -311,7 +296,15 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* --- KATMAN 4: ALT ETİKETLER (MOBİLDE TAMAMEN GÖRÜNÜR) --- */}
+      {/* MOBİL ANA ARAMA - (KALDIRILMADI, ZOOM ENGELLENDİ) */}
+      <div className="md:hidden py-2 px-4 border-b border-border/40 bg-secondary/10">
+         <form onSubmit={handleSearch} className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input type="search" placeholder="Piyasalarda ara..." className="w-full pl-10 h-12 bg-background border-border/50 focus:border-primary/50 transition-all rounded-xl text-[16px] shadow-sm" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+        </form>
+      </div>
+
+      {/* --- KATMAN 4: ALT ETİKETLER --- */}
       <div className="bg-secondary/5 border-b border-border/40">
         <div className="container mx-auto px-4 max-w-[1800px] flex items-center justify-between gap-2 py-2">
            
@@ -344,7 +337,7 @@ export function Navbar() {
              </div>
            </div>
 
-           {/* SAĞ KISIM: Trendler Butonu (SADECE MASAÜSTÜ - Mobilde zaten Keşfet ekranında var) */}
+           {/* Trendler Butonu (SADECE MASAÜSTÜ) */}
            <div className="shrink-0 border-l border-border/50 pl-2 hidden md:block">
              <Popover open={isTagPopoverOpen} onOpenChange={setIsTagPopoverOpen}>
                 <PopoverTrigger asChild>
