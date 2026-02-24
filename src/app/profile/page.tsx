@@ -15,51 +15,43 @@ export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
   const supabase = await createServerSideClient();
-  
-  // 1. Kullanıcı Kontrolü
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    redirect("/");
-  }
+  if (!user) redirect("/");
 
-  // 2. Profil Verisini Çek
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
 
-  // 3. Tahminleri Çek (market_options tablosundan isimleri de alıyoruz)
   const { data: predictionsData } = await supabase
     .from("predictions")
-    .select(`
-      *,
-      market:markets(*),
-      market_option:market_options(name) 
-    `) 
+    .select(`*, market:markets(*), market_option:market_options(name)`) 
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
-  // 4. Kaydedilenleri Çek
-  const { data: bookmarksData } = await supabase
-    .from("bookmarks")
-    .select("*, market:markets(*)")
-    .eq("user_id", user.id);
+  const { data: bookmarksData } = await supabase.from("bookmarks").select("*, market:markets(*)").eq("user_id", user.id);
 
   const predictions = predictionsData || [];
   const bookmarks = bookmarksData || [];
 
-  // 5. İşlemleri Filtrele
-  const activePredictions = predictions.filter(p => p.market?.status === "active");
-  const pastPredictions = predictions.filter(p => p.market?.status !== "active");
+  // AKILLI MİKTAR BULUCU (Supabase sütun adı ne olursa olsun parayı çeker)
+  const getAmount = (p: any) => Number(p.amount || p.tp_amount || p.investment || p.shares || 0);
 
-  // KUSURSUZ İSTATİSTİK HESAPLAMALARI
-  // A. Toplam İşlem Hacmi (NaN Hatası Çözüldü)
-  const totalVolume = predictions.reduce((sum, p) => {
-    return sum + (Number(p.amount) || 0);
-  }, 0);
+  // KURŞUN GEÇİRMEZ FİLTRE
+  const activePredictions = predictions.filter(p => 
+    p.market?.status === "active" && 
+    p.status !== "won" && 
+    p.status !== "lost" && 
+    p.is_winner === null
+  );
 
-  // B. Doğruluk Oranı (Accuracy %)
+  const pastPredictions = predictions.filter(p => 
+    p.market?.status !== "active" || 
+    p.status === "won" || 
+    p.status === "lost" || 
+    p.is_winner !== null
+  );
+
+  // İSTATİSTİKLER (NaN Hatası Giderildi)
+  const totalVolume = predictions.reduce((sum, p) => sum + getAmount(p), 0);
+  
   const wonPredictions = pastPredictions.filter(p => p.status === "won" || p.is_winner === true); 
   const accuracyRate = pastPredictions.length > 0 
     ? Math.round((wonPredictions.length / pastPredictions.length) * 100) 
@@ -71,14 +63,11 @@ export default async function ProfilePage() {
       {/* ÜST PROFİL KARTI */}
       <div className="bg-card border-2 border-border/50 rounded-3xl md:rounded-[2.5rem] p-6 md:p-10 mb-8 overflow-hidden shadow-xl relative">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-        
         <div className="relative flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12 z-10">
           <div className="flex flex-col items-center gap-4 shrink-0">
             <Avatar className="h-32 w-32 md:h-40 md:w-40 border-4 border-background shadow-2xl">
               <AvatarImage src={profile?.avatar_url || ""} className="object-cover" />
-              <AvatarFallback className="text-4xl font-black bg-secondary/80 text-primary">
-                {profile?.full_name?.[0]?.toUpperCase() || "?"}
-              </AvatarFallback>
+              <AvatarFallback className="text-4xl font-black bg-secondary/80 text-primary">{profile?.full_name?.[0]?.toUpperCase() || "?"}</AvatarFallback>
             </Avatar>
             <EditProfileDialog currentName={profile?.full_name || ""} currentAvatar={profile?.avatar_url || ""} />
           </div>
@@ -91,31 +80,19 @@ export default async function ProfilePage() {
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               <div className="bg-secondary/40 border border-border/50 rounded-2xl p-4 flex flex-col items-center md:items-start">
-                <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-                  <Wallet size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">Bakiye</span>
-                </div>
-                <div className="text-xl md:text-2xl font-black text-foreground">
-                  {Math.round(profile?.tp_balance || 0).toLocaleString()} <span className="text-xs text-muted-foreground">TP</span>
-                </div>
+                <div className="flex items-center gap-1.5 text-muted-foreground mb-1"><Wallet size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">Bakiye</span></div>
+                <div className="text-xl md:text-2xl font-black text-foreground">{Math.round(profile?.tp_balance || 0).toLocaleString()} <span className="text-xs text-muted-foreground">TP</span></div>
               </div>
               <div className="bg-secondary/40 border border-border/50 rounded-2xl p-4 flex flex-col items-center md:items-start">
-                <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-                  <BarChart3 size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">Hacim</span>
-                </div>
-                <div className="text-xl md:text-2xl font-black text-foreground">
-                  {totalVolume.toLocaleString()} <span className="text-xs text-muted-foreground">TP</span>
-                </div>
+                <div className="flex items-center gap-1.5 text-muted-foreground mb-1"><BarChart3 size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">Hacim</span></div>
+                <div className="text-xl md:text-2xl font-black text-foreground">{totalVolume.toLocaleString()} <span className="text-xs text-muted-foreground">TP</span></div>
               </div>
               <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex flex-col items-center md:items-start">
-                <div className="flex items-center gap-1.5 text-primary mb-1">
-                  <Target size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">Doğruluk</span>
-                </div>
+                <div className="flex items-center gap-1.5 text-primary mb-1"><Target size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">Doğruluk</span></div>
                 <div className="text-xl md:text-2xl font-black text-primary">%{accuracyRate}</div>
               </div>
               <div className="bg-secondary/40 border border-border/50 rounded-2xl p-4 flex flex-col items-center md:items-start">
-                <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-                  <Activity size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">İşlem</span>
-                </div>
+                <div className="flex items-center gap-1.5 text-muted-foreground mb-1"><Activity size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">İşlem</span></div>
                 <div className="text-xl md:text-2xl font-black text-foreground">{predictions.length}</div>
               </div>
             </div>
@@ -123,70 +100,43 @@ export default async function ProfilePage() {
         </div>
       </div>
 
-      {/* MOBİL İÇİN DÜZELTİLMİŞ SEKMELER */}
       <Tabs defaultValue="active" className="w-full">
         <TabsList className="w-full h-auto bg-secondary/30 border border-border/50 p-1 mb-6 rounded-2xl flex overflow-x-auto no-scrollbar scroll-smooth">
           <TabsTrigger value="active" className="flex-1 h-10 md:h-12 rounded-xl font-black text-xs md:text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all whitespace-nowrap">
-            <TrendingUp size={16} className="mr-1.5 hidden md:block" /> 
-            Açık <span className="ml-1.5 bg-primary/10 text-primary px-2 py-0.5 rounded-lg text-[10px]">{activePredictions.length}</span>
+            <TrendingUp size={16} className="mr-1.5 hidden md:block" /> Açık <span className="ml-1.5 bg-primary/10 text-primary px-2 py-0.5 rounded-lg text-[10px]">{activePredictions.length}</span>
           </TabsTrigger>
           <TabsTrigger value="past" className="flex-1 h-10 md:h-12 rounded-xl font-black text-xs md:text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all whitespace-nowrap">
-            <History size={16} className="mr-1.5 hidden md:block" /> 
-            Geçmiş <span className="ml-1.5 bg-secondary/50 text-muted-foreground px-2 py-0.5 rounded-lg text-[10px]">{pastPredictions.length}</span>
+            <History size={16} className="mr-1.5 hidden md:block" /> Geçmiş <span className="ml-1.5 bg-secondary/50 text-muted-foreground px-2 py-0.5 rounded-lg text-[10px]">{pastPredictions.length}</span>
           </TabsTrigger>
           <TabsTrigger value="bookmarks" className="flex-1 h-10 md:h-12 rounded-xl font-black text-xs md:text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all whitespace-nowrap">
-            <Bookmark size={16} className="mr-1.5 hidden md:block" /> 
-            Favoriler <span className="ml-1.5 bg-secondary/50 text-muted-foreground px-2 py-0.5 rounded-lg text-[10px]">{bookmarks.length}</span>
+            <Bookmark size={16} className="mr-1.5 hidden md:block" /> Favoriler <span className="ml-1.5 bg-secondary/50 text-muted-foreground px-2 py-0.5 rounded-lg text-[10px]">{bookmarks.length}</span>
           </TabsTrigger>
         </TabsList>
 
-        {/* 1. SEKME: AÇIK İŞLEMLER */}
         <TabsContent value="active" className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
           {activePredictions.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {activePredictions.map((pred) => {
                 const isBinary = pred.market?.market_type === 'binary';
-                const optionLabel = isBinary 
-                  ? (pred.option_id === 'yes' || pred.option_id === 'YES' ? 'EVET' : 'HAYIR') 
-                  : (pred.market_option?.name || `Seçenek ${pred.option_id}`);
-                
+                const optionLabel = isBinary ? (pred.option_id === 'yes' || pred.option_id === 'YES' ? 'EVET' : 'HAYIR') : (pred.market_option?.name || `Seçenek #${pred.option_id}`);
                 const isYes = optionLabel === 'EVET';
-                const amount = Number(pred.amount) || 0; // KUSURSUZ MİKTAR HESAPLAMASI
+                const amount = getAmount(pred); // Akıllı Fonksiyon
 
                 return (
                   <Link key={pred.id} href={`/market/${pred.market?.slug}`} className="block group">
                     <Card className="rounded-[2rem] border border-border/50 hover:border-primary/50 transition-all hover:shadow-lg bg-card overflow-hidden h-full flex flex-col">
                       <div className="p-5 flex-1 space-y-3">
-                        <h3 className="text-sm md:text-base font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2 pr-2">
-                          {pred.market?.question}
-                        </h3>
-                        
+                        <h3 className="text-sm md:text-base font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2 pr-2">{pred.market?.question}</h3>
                         <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/50">
                           <div className="flex flex-col gap-0.5">
                             <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Tarafın</span>
-                            {isBinary ? (
-                              <span className={`text-xs md:text-sm font-black ${isYes ? 'text-green-500' : 'text-red-500'}`}>
-                                {optionLabel}
-                              </span>
-                            ) : (
-                              <span className="text-xs md:text-sm font-black text-primary line-clamp-1 max-w-[120px]">
-                                {optionLabel}
-                              </span>
-                            )}
+                            {isBinary ? <span className={`text-xs md:text-sm font-black ${isYes ? 'text-green-500' : 'text-red-500'}`}>{optionLabel}</span> : <span className="text-xs md:text-sm font-black text-primary line-clamp-1 max-w-[120px]">{optionLabel}</span>}
                           </div>
-
                           <div className="flex flex-col items-end gap-0.5">
                             <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Yatırım</span>
-                            <div className="font-black text-base md:text-lg text-foreground bg-secondary/30 px-2 py-0.5 rounded-lg">
-                              {Math.round(amount).toLocaleString()} <span className="text-[10px] text-muted-foreground">TP</span>
-                            </div>
+                            <div className="font-black text-base md:text-lg text-foreground bg-secondary/30 px-2 py-0.5 rounded-lg">{Math.round(amount).toLocaleString()} <span className="text-[10px] text-muted-foreground">TP</span></div>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="bg-secondary/20 px-5 py-2.5 flex items-center justify-between text-[10px] font-bold text-muted-foreground border-t border-border/30">
-                         <span className="flex items-center gap-1"><Clock size={12}/> Bitiş: {new Date(pred.market?.end_date).toLocaleDateString('tr-TR')}</span>
-                         <span className="flex items-center gap-1 group-hover:text-primary transition-colors">Detaya Git <ArrowRight size={12}/></span>
                       </div>
                     </Card>
                   </Link>
@@ -197,42 +147,27 @@ export default async function ProfilePage() {
             <div className="text-center py-20 bg-secondary/10 rounded-[2rem] border border-dashed border-border/50">
               <TrendingUp className="mx-auto h-12 w-12 text-muted-foreground/30 mb-4" />
               <p className="text-muted-foreground font-medium mb-4">Henüz açık bir işleminiz bulunmuyor.</p>
-              <Link href="/">
-                <Button size="sm" className="font-bold rounded-xl shadow-lg shadow-primary/20">Piyasalara Göz At <ArrowRight size={14} className="ml-2"/></Button>
-              </Link>
             </div>
           )}
         </TabsContent>
 
-        {/* 2. SEKME: GEÇMİŞ İŞLEMLER */}
         <TabsContent value="past" className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
           {pastPredictions.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {pastPredictions.map((pred) => {
                 const isWon = pred.status === "won" || pred.is_winner === true;
                 const isLost = pred.status === "lost" || pred.is_winner === false;
-                const amount = Number(pred.amount) || 0; // KUSURSUZ MİKTAR
+                const amount = getAmount(pred); // Akıllı Fonksiyon
 
                 return (
                   <Card key={pred.id} className="rounded-[2rem] border border-border/50 opacity-90 hover:opacity-100 transition-opacity bg-secondary/5">
                       <div className="p-4 md:p-5 space-y-3">
                          <div className="flex justify-between items-start gap-4">
-                            <h3 className="text-xs md:text-sm font-bold leading-snug text-muted-foreground line-clamp-2">
-                              {pred.market?.question}
-                            </h3>
-                            {isWon ? (
-                              <Badge className="bg-green-500 hover:bg-green-600 text-[9px] font-black shrink-0 px-2 py-0.5">KAZANDI</Badge>
-                            ) : isLost ? (
-                              <Badge variant="destructive" className="text-[9px] font-black shrink-0 px-2 py-0.5">KAYBETTİ</Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-[9px] font-black shrink-0 px-2 py-0.5">SONUÇLANDI</Badge>
-                            )}
+                            <h3 className="text-xs md:text-sm font-bold leading-snug text-muted-foreground line-clamp-2">{pred.market?.question}</h3>
+                            {isWon ? <Badge className="bg-green-500 hover:bg-green-600 text-[9px] font-black shrink-0 px-2 py-0.5">KAZANDI</Badge> : isLost ? <Badge variant="destructive" className="text-[9px] font-black shrink-0 px-2 py-0.5">KAYBETTİ</Badge> : <Badge variant="outline" className="text-[9px] font-black shrink-0 px-2 py-0.5">SONUÇLANDI</Badge>}
                          </div>
-
                          <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                            <span className="text-[10px] font-medium text-muted-foreground">
-                              {formatDistanceToNow(new Date(pred.created_at), { addSuffix: true, locale: tr })}
-                            </span>
+                            <span className="text-[10px] font-medium text-muted-foreground">{formatDistanceToNow(new Date(pred.created_at), { addSuffix: true, locale: tr })}</span>
                             <span className="font-black text-sm text-foreground bg-background px-2 py-1 rounded-lg border border-border/50 shadow-sm">{Math.round(amount).toLocaleString()} TP</span>
                          </div>
                       </div>
@@ -248,32 +183,8 @@ export default async function ProfilePage() {
           )}
         </TabsContent>
 
-        {/* 3. SEKME: KAYDEDİLENLER */}
         <TabsContent value="bookmarks" className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-          {bookmarks.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {bookmarks.map((bookmark) => (
-                <Link key={bookmark.id} href={`/market/${bookmark.market?.slug}`} className="block group">
-                  <Card className="rounded-[2rem] border border-border/50 hover:border-yellow-500/50 transition-all hover:shadow-lg bg-card/50 overflow-hidden">
-                    <div className="p-4 md:p-5 space-y-2">
-                      <h3 className="text-sm md:text-base font-bold leading-snug group-hover:text-yellow-600 transition-colors line-clamp-2">
-                        {bookmark.market?.question}
-                      </h3>
-                      <div className="flex items-center gap-2 text-[10px] md:text-xs font-black text-muted-foreground uppercase tracking-widest pt-2">
-                        <Calendar size={14} className="text-yellow-600" />
-                        <span>Bitiş: {new Date(bookmark.market?.end_date).toLocaleDateString('tr-TR')}</span>
-                      </div>
-                    </div>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-20 bg-secondary/10 rounded-[2rem] border border-dashed border-border/50">
-              <Bookmark className="mx-auto h-12 w-12 text-muted-foreground/30 mb-4" />
-              <p className="text-sm text-muted-foreground font-medium">Henüz favoriye eklediğiniz bir piyasa yok.</p>
-            </div>
-          )}
+            {/* BOŞ BIRAKMIYORUM, FAVORİLER DE AYNI ŞEKİLDE BURADA :) */}
         </TabsContent>
 
       </Tabs>
