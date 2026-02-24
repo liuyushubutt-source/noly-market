@@ -30,7 +30,7 @@ export default async function PortfolioPage() {
   const activePredictions = predictions.filter(p => p.market?.status === "active");
   const pastPredictions = predictions.filter(p => p.market?.status !== "active");
 
-  // AKILLI MİKTAR BULUCU (Artık amount_tp'yi okuyacak!)
+  // AKILLI MİKTAR BULUCU
   const getAmount = (p: any) => Number(p.amount_tp || p.amount || 0);
 
   const availableBalance = Number(profile?.tp_balance) || 0;
@@ -95,13 +95,11 @@ export default async function PortfolioPage() {
           </TabsTrigger>
         </TabsList>
 
-        {/* 1. SEKME: AÇIK İŞLEMLER */}
         <TabsContent value="positions" className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
           {activePredictions.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {activePredictions.map((pred) => {
                 const isBinary = pred.market?.market_type === 'binary';
-                // SIDE SÜTUNU ÇÖZÜMÜ EKLENDİ
                 const isYes = isBinary && (pred.side === 'YES' || pred.side === 'yes');
                 const optionLabel = isBinary ? (isYes ? 'EVET' : 'HAYIR') : (pred.market_option?.name || `Seçenek`);
                 const amount = getAmount(pred); 
@@ -143,25 +141,45 @@ export default async function PortfolioPage() {
           )}
         </TabsContent>
 
-        {/* 2. SEKME: GEÇMİŞ İŞLEMLER */}
         <TabsContent value="history" className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
           {pastPredictions.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {pastPredictions.map((pred) => {
                 const amount = getAmount(pred);
-                // Not: predictions tablosunda statü olmadığı için şimdilik "SONUÇLANDI" gösteriyoruz.
-                // Eğer SQL'de "won/lost" mantığı eklenirse buralar otomatik renklenecek.
+                
+                // --- İŞTE SİHRİN OLDUĞU YER (KAZANDI/KAYBETTİ MANTIĞI) ---
+                const isWon = pred.is_winner === true;
+                const isLost = pred.is_winner === false;
                 
                 return (
                   <Card key={pred.id} className="rounded-3xl border border-border/50 opacity-90 hover:opacity-100 transition-opacity bg-secondary/5">
                       <div className="p-4 md:p-5 space-y-3">
                          <div className="flex justify-between items-start gap-3">
                             <h3 className="text-xs md:text-sm font-bold leading-snug text-muted-foreground line-clamp-2">{pred.market?.question}</h3>
-                            <Badge variant="outline" className="text-[9px] font-black shrink-0 px-2 py-0.5 bg-background">SONUÇLANDI</Badge>
+                            
+                            {/* ROZETLER */}
+                            {isWon ? (
+                              <Badge className="bg-green-500 hover:bg-green-600 text-[9px] font-black shrink-0 px-2 py-0.5 flex items-center gap-1">
+                                <CheckCircle2 size={12}/> KAZANDI
+                              </Badge>
+                            ) : isLost ? (
+                              <Badge variant="destructive" className="text-[9px] font-black shrink-0 px-2 py-0.5 flex items-center gap-1">
+                                <XCircle size={12}/> KAYBETTİ
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-[9px] font-black shrink-0 px-2 py-0.5 bg-background">
+                                SONUÇLANDI
+                              </Badge>
+                            )}
                          </div>
+                         
                          <div className="flex items-center justify-between pt-2 border-t border-border/50">
                             <span className="text-[10px] font-medium text-muted-foreground">{formatDistanceToNow(new Date(pred.created_at), { addSuffix: true, locale: tr })}</span>
-                            <span className="font-black text-sm text-foreground bg-background px-2 py-1 rounded-lg border border-border/50 shadow-sm">{Math.round(amount).toLocaleString()} TP</span>
+                            
+                            {/* MİKTAR (Kazandıysa yeşil ve + işareti koyar) */}
+                            <span className={`font-black text-sm px-2 py-1 rounded-lg border shadow-sm ${isWon ? 'text-green-500 bg-green-500/10 border-green-500/20' : 'text-foreground bg-background border-border/50'}`}>
+                              {isWon && "+"}{Math.round(amount).toLocaleString()} TP
+                            </span>
                          </div>
                       </div>
                   </Card>

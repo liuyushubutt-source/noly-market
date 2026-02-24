@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, TrendingUp, History, Bookmark, Calendar, Target, BarChart3, Activity, ArrowRight, Clock } from "lucide-react";
+import { Wallet, TrendingUp, History, Bookmark, Calendar, Target, BarChart3, Activity, ArrowRight, Clock, CheckCircle2, XCircle } from "lucide-react";
 import Link from "next/link";
 import { EditProfileDialog } from "@/components/profile/edit-profile-dialog";
 import { formatDistanceToNow } from "date-fns";
@@ -31,7 +31,7 @@ export default async function ProfilePage() {
   const predictions = predictionsData || [];
   const bookmarks = bookmarksData || [];
 
-  // MİKTAR BULUCU (amount_tp eklendi)
+  // MİKTAR BULUCU
   const getAmount = (p: any) => Number(p.amount_tp || p.amount || 0);
 
   // FİLTRELEME
@@ -40,8 +40,9 @@ export default async function ProfilePage() {
 
   const totalVolume = predictions.reduce((sum, p) => sum + getAmount(p), 0);
   
-  // Doğruluk oranı: Veritabanında kazanma bilgisi olmadığı için şimdilik "sonuçlanan işlem sayısına" bağladım. Sıfır gözükmesin.
-  const accuracyRate = 0; // SQL'e winner/loser mantığı gelene kadar 0 kalacak.
+  // DİNAMİK DOĞRULUK ORANI HESAPLAMASI (KAZANMA/KAYBETME)
+  const wonPredictions = pastPredictions.filter(p => p.is_winner === true); 
+  const accuracyRate = pastPredictions.length > 0 ? Math.round((wonPredictions.length / pastPredictions.length) * 100) : null;
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 max-w-[1000px] animate-in fade-in duration-500">
@@ -60,6 +61,7 @@ export default async function ProfilePage() {
           <div className="flex-1 w-full text-center md:text-left space-y-6 mt-2">
             <h1 className="text-3xl md:text-5xl font-black tracking-tight flex items-center justify-center md:justify-start gap-3">
               {profile?.full_name || "Bilinmeyen Kullanıcı"}
+              {(accuracyRate !== null && accuracyRate >= 60) && <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white font-black uppercase tracking-widest text-[10px] hidden sm:flex">Top Tahminci</Badge>}
             </h1>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
@@ -71,9 +73,9 @@ export default async function ProfilePage() {
                 <div className="flex items-center gap-1.5 text-muted-foreground mb-1"><BarChart3 size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">Hacim</span></div>
                 <div className="text-xl md:text-2xl font-black text-foreground">{totalVolume.toLocaleString()} <span className="text-xs text-muted-foreground">TP</span></div>
               </div>
-              <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex flex-col items-center md:items-start opacity-50">
-                <div className="flex items-center gap-1.5 text-primary mb-1"><Target size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">Doğruluk</span></div>
-                <div className="text-xl md:text-2xl font-black text-primary">-%</div>
+              <div className={`border rounded-2xl p-4 flex flex-col items-center md:items-start transition-colors ${accuracyRate !== null && accuracyRate >= 50 ? 'bg-primary/10 border-primary/20' : 'bg-secondary/40 border-border/50'}`}>
+                <div className={`flex items-center gap-1.5 mb-1 ${accuracyRate !== null && accuracyRate >= 50 ? 'text-primary' : 'text-muted-foreground'}`}><Target size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">Doğruluk</span></div>
+                <div className={`text-xl md:text-2xl font-black ${accuracyRate !== null && accuracyRate >= 50 ? 'text-primary' : 'text-foreground'}`}>{accuracyRate !== null ? `%${accuracyRate}` : '-%'}</div>
               </div>
               <div className="bg-secondary/40 border border-border/50 rounded-2xl p-4 flex flex-col items-center md:items-start">
                 <div className="flex items-center gap-1.5 text-muted-foreground mb-1"><Activity size={14} /> <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">İşlem</span></div>
@@ -140,17 +142,40 @@ export default async function ProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {pastPredictions.map((pred) => {
                 const amount = getAmount(pred);
+                
+                // --- İŞTE KAZANDI/KAYBETTİ MANTIĞI BURAYA EKLENDİ ---
+                const isWon = pred.is_winner === true;
+                const isLost = pred.is_winner === false;
 
                 return (
                   <Card key={pred.id} className="rounded-[2rem] border border-border/50 opacity-90 hover:opacity-100 transition-opacity bg-secondary/5">
                       <div className="p-4 md:p-5 space-y-3">
                          <div className="flex justify-between items-start gap-4">
                             <h3 className="text-xs md:text-sm font-bold leading-snug text-muted-foreground line-clamp-2">{pred.market?.question}</h3>
-                            <Badge variant="outline" className="text-[9px] font-black shrink-0 px-2 py-0.5 bg-background">SONUÇLANDI</Badge>
+                            
+                            {/* ROZETLER */}
+                            {isWon ? (
+                              <Badge className="bg-green-500 hover:bg-green-600 text-[9px] font-black shrink-0 px-2 py-0.5 flex items-center gap-1">
+                                <CheckCircle2 size={12}/> KAZANDI
+                              </Badge>
+                            ) : isLost ? (
+                              <Badge variant="destructive" className="text-[9px] font-black shrink-0 px-2 py-0.5 flex items-center gap-1">
+                                <XCircle size={12}/> KAYBETTİ
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-[9px] font-black shrink-0 px-2 py-0.5 bg-background">
+                                SONUÇLANDI
+                              </Badge>
+                            )}
                          </div>
+                         
                          <div className="flex items-center justify-between pt-2 border-t border-border/50">
                             <span className="text-[10px] font-medium text-muted-foreground">{formatDistanceToNow(new Date(pred.created_at), { addSuffix: true, locale: tr })}</span>
-                            <span className="font-black text-sm text-foreground bg-background px-2 py-1 rounded-lg border border-border/50 shadow-sm">{Math.round(amount).toLocaleString()} TP</span>
+                            
+                            {/* MİKTAR (+ işareti ve renk) */}
+                            <span className={`font-black text-sm px-2 py-1 rounded-lg border shadow-sm ${isWon ? 'text-green-500 bg-green-500/10 border-green-500/20' : 'text-foreground bg-background border-border/50'}`}>
+                              {isWon && "+"}{Math.round(amount).toLocaleString()} TP
+                            </span>
                          </div>
                       </div>
                   </Card>
@@ -166,7 +191,30 @@ export default async function ProfilePage() {
         </TabsContent>
 
         <TabsContent value="bookmarks" className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-            {/* FAVORİLER EKRANI */}
+          {bookmarks.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {bookmarks.map((bookmark) => (
+                <Link key={bookmark.id} href={`/market/${bookmark.market?.slug}`} className="block group">
+                  <Card className="rounded-[2rem] border border-border/50 hover:border-yellow-500/50 transition-all hover:shadow-lg bg-card/50 overflow-hidden">
+                    <div className="p-4 md:p-5 space-y-2">
+                      <h3 className="text-sm md:text-base font-bold leading-snug group-hover:text-yellow-600 transition-colors line-clamp-2">
+                        {bookmark.market?.question}
+                      </h3>
+                      <div className="flex items-center gap-2 text-[10px] md:text-xs font-black text-muted-foreground uppercase tracking-widest pt-2">
+                        <Calendar size={14} className="text-yellow-600" />
+                        <span>Bitiş: {new Date(bookmark.market?.end_date).toLocaleDateString('tr-TR')}</span>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20 bg-secondary/10 rounded-[2rem] border border-dashed border-border/50">
+              <Bookmark className="mx-auto h-12 w-12 text-muted-foreground/30 mb-4" />
+              <p className="text-sm text-muted-foreground font-medium">Henüz favoriye eklediğiniz bir piyasa yok.</p>
+            </div>
+          )}
         </TabsContent>
 
       </Tabs>
