@@ -6,10 +6,10 @@ import { useState } from "react";
 import { 
   Home, Search, Flame, Menu, PieChart, User, Trophy, 
   Gift, ShieldCheck, Code, FileText, FileCheck, LogOut, 
-  Twitter, Instagram, MessageCircle, Hash, Wallet, TrendingUp 
+  Twitter, Instagram, MessageCircle, Hash, Wallet, TrendingUp, X 
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ThemeToggle } from "./theme-toggle";
 import { HowItWorks } from "./how-it-works"; 
 import { useBalance } from "@/context/balance-context";
@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-// Trend etiketler (Arama çekmecesi için)
 const TRENDING_TAGS = [
   { label: "Erken Seçim", value: "Erken Seçim" },
   { label: "Asgari Ücret", value: "Asgari" },
@@ -60,7 +59,6 @@ export function BottomNav() {
     router.push(`/?${params.toString()}`);
   };
 
-  // Navigasyon Öğeleri
   const NAV_ITEMS = [
     { label: "Ana Sayfa", icon: Home, href: "/", isActive: pathname === "/" },
     { label: "Keşfet", icon: Search, action: () => setIsSearchOpen(true), isActive: isSearchOpen },
@@ -71,43 +69,48 @@ export function BottomNav() {
     <>
       <HowItWorks isFloating={true} />
 
-      {/* --- ARAMA ÇEKMECESİ (DRAWER) --- */}
-      <Drawer open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-        <DrawerContent className="bg-background/95 backdrop-blur-xl border-border/50 pb-safe h-[85vh]">
-          <DrawerHeader className="text-left border-b border-border/50 pb-4">
-            <DrawerTitle className="text-lg font-black">Piyasalarda Ara</DrawerTitle>
-          </DrawerHeader>
-          <div className="p-4 space-y-6 overflow-y-auto no-scrollbar">
-            <form onSubmit={handleSearch} className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input 
-                autoFocus
-                placeholder="Etiket, soru veya kategori ara..." 
-                className="w-full pl-11 h-14 bg-secondary/50 border-border/50 rounded-2xl text-base font-medium focus-visible:ring-primary" 
-                value={searchQuery} 
-                onChange={(e) => setSearchQuery(e.target.value)} 
-              />
+      {/* --- TAM EKRAN ARAMA MODALI (Klavye Dostu & Zoom Önleyici) --- */}
+      <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+        <DialogContent className="fixed inset-0 z-[100] w-full h-[100dvh] max-w-none m-0 p-0 rounded-none border-none bg-background flex flex-col pt-safe animate-in fade-in slide-in-from-bottom-2">
+          <DialogTitle className="sr-only">Arama</DialogTitle>
+          
+          <div className="flex items-center gap-2 p-3 border-b border-border/50 bg-secondary/10">
+            <form onSubmit={handleSearch} className="flex-1 relative flex items-center bg-background border border-border/50 rounded-xl px-3 h-12 shadow-sm">
+               <Search className="h-5 w-5 text-muted-foreground shrink-0" />
+               {/* text-[16px] iOS Zoom sorununu engeller */}
+               <Input 
+                 autoFocus
+                 placeholder="Etiket, soru veya piyasa ara..." 
+                 className="border-none shadow-none focus-visible:ring-0 text-[16px] flex-1 bg-transparent px-2 h-full" 
+                 value={searchQuery} 
+                 onChange={(e) => setSearchQuery(e.target.value)} 
+               />
             </form>
+            <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(false)} className="shrink-0 h-12 w-12 rounded-xl">
+              <X className="h-6 w-6" />
+            </Button>
+          </div>
 
+          <div className="flex-1 overflow-y-auto p-5 space-y-6">
             <div>
-              <h4 className="text-[11px] font-black text-muted-foreground uppercase mb-3 tracking-widest flex items-center gap-1">
-                <TrendingUp size={14} /> Trend Etiketler
+              <h4 className="text-[11px] font-black text-muted-foreground uppercase mb-4 tracking-widest flex items-center gap-1.5">
+                <TrendingUp size={14} className="text-primary" /> Popüler Etiketler
               </h4>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2.5">
                 {TRENDING_TAGS.map(t => (
                     <Button 
                       key={t.label} variant="secondary" size="sm" 
-                      className="h-9 text-xs px-4 font-bold rounded-xl bg-secondary/50 hover:bg-secondary border border-transparent hover:border-border/50" 
+                      className="h-10 text-sm px-4 font-bold rounded-xl bg-secondary/40 hover:bg-secondary border border-transparent transition-all" 
                       onClick={() => navigateToTag(t.value)}
                     >
-                        <Hash size={14} className="mr-1.5 opacity-50 text-primary"/> {t.label}
+                        <Hash size={16} className="mr-1.5 opacity-50 text-primary"/> {t.label}
                     </Button>
                 ))}
               </div>
             </div>
           </div>
-        </DrawerContent>
-      </Drawer>
+        </DialogContent>
+      </Dialog>
 
       {/* --- MOBİL ALT MENÜ ÇUBUĞU --- */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/50 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
@@ -133,7 +136,7 @@ export function BottomNav() {
             )
           ))}
 
-          {/* DAHA FAZLA BUTONU VE YANDAN AÇILAN MENÜ (SHEET) */}
+          {/* SAĞDAN AÇILAN MENÜ (SHEET) */}
           <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <SheetTrigger asChild>
               <button className="flex flex-col items-center justify-center w-full h-full space-y-1 text-muted-foreground hover:text-foreground transition-colors">
@@ -149,10 +152,10 @@ export function BottomNav() {
                 </SheetTitle>
               </SheetHeader>
               
+              {/* ÜST İÇERİK: Linkler ve Kullanıcı Profili (Giriş Yapmışsa) */}
               <div className="flex-1 overflow-y-auto p-5 space-y-6">
                 
-                {/* 1. KULLANICI / GİRİŞ ALANI */}
-                {user ? (
+                {user && (
                   <div className="bg-secondary/30 p-4 rounded-2xl border border-border/50 space-y-4">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-12 w-12 border-2 border-background shadow-sm">
@@ -173,18 +176,8 @@ export function BottomNav() {
                       </Button>
                     </div>
                   </div>
-                ) : (
-                  <div className="bg-primary/5 p-5 rounded-2xl border border-primary/20 text-center space-y-3">
-                    <div className="bg-background p-3 rounded-full w-fit mx-auto border border-border/50 shadow-sm"><User size={24} className="text-primary"/></div>
-                    <p className="text-xs font-bold text-muted-foreground">Tahmin yapmak ve kazanmak için aramıza katıl.</p>
-                    <div className="flex flex-col gap-2 pt-2">
-                      <Button onClick={handleGoogleLogin} className="w-full font-black h-11 rounded-xl shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90">ÜYE OL</Button>
-                      <Button onClick={handleGoogleLogin} variant="outline" className="w-full font-bold h-11 rounded-xl bg-background">Giriş Yap</Button>
-                    </div>
-                  </div>
                 )}
 
-                {/* 2. PLATFORM LİNKLERİ */}
                 <div className="space-y-1">
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2 mb-2">Platform</p>
                   <Link href="/leaderboard" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 text-sm font-bold rounded-xl hover:bg-secondary/50 transition-colors"><Trophy size={18} className="text-yellow-500"/> Liderlik Tablosu</Link>
@@ -192,7 +185,6 @@ export function BottomNav() {
                   <Link href="/accuracy" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 text-sm font-bold rounded-xl hover:bg-secondary/50 transition-colors"><ShieldCheck size={18} className="text-green-500"/> Doğruluk Oranı</Link>
                 </div>
 
-                {/* 3. BİLGİ LİNKLERİ */}
                 <div className="space-y-1">
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2 mb-2">Sistem & Bilgi</p>
                   <Link href="/api-docs" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 text-sm font-bold rounded-xl hover:bg-secondary/50 transition-colors text-muted-foreground"><Code size={18} /> API'ler</Link>
@@ -200,18 +192,28 @@ export function BottomNav() {
                 </div>
               </div>
 
-              {/* 4. ALT KISIM (Sosyal Medya, Çıkış ve Tema) */}
-              <div className="p-5 border-t border-border/50 bg-secondary/10 space-y-4 mt-auto">
+              {/* ALT İÇERİK (Footer Alanı): Giriş Butonları ve Sosyal Medya EN ALTA SABİTLENDİ */}
+              <div className="p-5 border-t border-border/50 bg-secondary/10 space-y-5 mt-auto pb-safe">
+                
+                {/* Giriş Yapmamışsa Giriş Butonları En Altta */}
+                {!user && (
+                  <div className="flex flex-col gap-2 pb-5 border-b border-border/50">
+                    <Button onClick={handleGoogleLogin} className="w-full font-black h-12 rounded-xl shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground text-sm">
+                      ÜYE OL VEYA GİRİŞ YAP
+                    </Button>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-muted-foreground">Tema Seçimi</span>
                   <ThemeToggle />
                 </div>
                 
-                {/* SOSYAL MEDYA İKONLARI */}
-                <div className="flex items-center justify-center gap-3 pt-2">
-                  <a href="https://twitter.com" target="_blank" rel="noreferrer" className="p-2.5 bg-background border border-border/50 rounded-full text-muted-foreground hover:text-[#1DA1F2] hover:border-[#1DA1F2] transition-colors shadow-sm"><Twitter size={18} /></a>
-                  <a href="https://instagram.com" target="_blank" rel="noreferrer" className="p-2.5 bg-background border border-border/50 rounded-full text-muted-foreground hover:text-[#E1306C] hover:border-[#E1306C] transition-colors shadow-sm"><Instagram size={18} /></a>
-                  <a href="https://discord.com" target="_blank" rel="noreferrer" className="p-2.5 bg-background border border-border/50 rounded-full text-muted-foreground hover:text-[#5865F2] hover:border-[#5865F2] transition-colors shadow-sm"><MessageCircle size={18} /></a>
+                {/* Sosyal Medya Simgeleri */}
+                <div className="flex items-center justify-center gap-4 pt-1">
+                  <a href="https://twitter.com" target="_blank" rel="noreferrer" className="p-2.5 bg-background border border-border/50 rounded-full text-muted-foreground hover:text-[#1DA1F2] hover:border-[#1DA1F2] transition-colors shadow-sm"><Twitter size={20} /></a>
+                  <a href="https://instagram.com" target="_blank" rel="noreferrer" className="p-2.5 bg-background border border-border/50 rounded-full text-muted-foreground hover:text-[#E1306C] hover:border-[#E1306C] transition-colors shadow-sm"><Instagram size={20} /></a>
+                  <a href="https://discord.com" target="_blank" rel="noreferrer" className="p-2.5 bg-background border border-border/50 rounded-full text-muted-foreground hover:text-[#5865F2] hover:border-[#5865F2] transition-colors shadow-sm"><MessageCircle size={20} /></a>
                 </div>
 
                 {user && (

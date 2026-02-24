@@ -30,7 +30,6 @@ import {
   Popover, PopoverContent, PopoverTrigger
 } from "@/components/ui/popover";
 
-// --- KATMAN 2: ANA KATEGORİLER (Emojiler Temizlendi, Sadece İkonlar Kaldı) ---
 const MAIN_CATEGORIES = [
   { label: "Popüler", value: "popular", icon: Flame },
   { label: "Yeni", value: "new", icon: Zap },
@@ -50,7 +49,6 @@ const MAIN_CATEGORIES = [
   { label: "Dünya Gündemi", value: "Dünya", icon: Globe },
 ];
 
-// --- KATMAN 4: ALT ETİKETLER ---
 const SUB_TOPICS = [
   { label: "Tümü", value: null },
   { label: "Erken Seçim", value: "Erken Seçim" },
@@ -99,9 +97,7 @@ export function Navbar() {
   }, [user]);
 
   useEffect(() => {
-    const handleAvatarUpdate = (e: CustomEvent) => {
-      setAvatarUrl(e.detail);
-    };
+    const handleAvatarUpdate = (e: CustomEvent) => { setAvatarUrl(e.detail); };
     window.addEventListener('avatar-update', handleAvatarUpdate as EventListener);
     return () => window.removeEventListener('avatar-update', handleAvatarUpdate as EventListener);
   }, []);
@@ -154,12 +150,12 @@ export function Navbar() {
         <div className="flex items-center gap-4 md:gap-6 flex-1">
           <Link href="/" className="flex items-center space-x-1 sm:space-x-2 font-black text-[16px] sm:text-xl tracking-tighter shrink-0 hover:opacity-80 transition-opacity">
             <span className="text-xl sm:text-2xl">📉</span>
-            <span>TAHMİN PİYASALARI</span>
+            <span>NOLYMARKET</span>
           </Link>
           
           <form onSubmit={handleSearch} className="hidden md:flex relative flex-1 max-w-lg">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input type="search" placeholder="Piyasalarda ara..." className="w-full pl-10 h-10 bg-secondary/50 border-none focus-visible:ring-1 focus-visible:ring-primary rounded-xl" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+            <Input type="search" placeholder="Piyasalarda ara..." className="w-full pl-10 h-10 bg-secondary/50 border-none focus-visible:ring-1 focus-visible:ring-primary rounded-xl text-[16px]" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
           </form>
           
           <div className="hidden md:block"><HowItWorks isFloating={false} /></div>
@@ -175,7 +171,7 @@ export function Navbar() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full border-2 border-border/50 overflow-hidden p-0 hover:border-primary/50 transition-colors">
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full border-2 border-border/50 overflow-hidden p-0 hover:border-primary/50 transition-colors hidden md:flex">
                     <Avatar className="h-full w-full">
                       <AvatarImage src={avatarUrl} className="object-cover h-full w-full aspect-square" />
                       <AvatarFallback className="font-bold bg-primary text-primary-foreground">
@@ -185,7 +181,7 @@ export function Navbar() {
                   </Button>
                 </DropdownMenuTrigger>
                 
-                <DropdownMenuContent align="end" className="w-64 mt-2 rounded-[1.5rem] border-border/50 shadow-2xl p-2 bg-background/95 backdrop-blur-xl">
+                <DropdownMenuContent align="end" className="w-64 mt-2 rounded-[1.5rem] border-border/50 shadow-2xl p-2 bg-background/95 backdrop-blur-xl hidden md:block">
                   <div className="flex items-center gap-3 p-3 mb-2 bg-secondary/30 rounded-xl border border-border/50">
                      <Avatar className="h-10 w-10 border-2 border-background shadow-sm shrink-0">
                        <AvatarImage src={avatarUrl} className="object-cover h-full w-full aspect-square" />
@@ -196,11 +192,6 @@ export function Navbar() {
                        <span className="text-[10px] font-medium text-muted-foreground truncate">{user.email}</span>
                      </div>
                   </div>
-
-                  <DropdownMenuItem className="md:hidden flex items-center justify-between text-primary font-black bg-primary/5 mb-2 p-3 rounded-xl cursor-default focus:bg-primary/5">
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Cüzdan</span>
-                    <span className="flex items-center gap-1.5"><Wallet className="h-4 w-4" /> {Math.round(balance).toLocaleString()} TP</span>
-                  </DropdownMenuItem>
                   
                   <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-2 mb-1">Hesap İşlemleri</DropdownMenuLabel>
                   
@@ -228,59 +219,20 @@ export function Navbar() {
               </DropdownMenu>
             </div>
           ) : (
-            // GÜNCELLENMİŞ MİSAFİR ALANI (MOBİL UYUMLU GİRİŞ/ÜYE OL)
-            <div className="flex items-center gap-1.5 md:gap-2">
-              <Button 
-                onClick={handleGoogleLogin} 
-                variant="ghost" 
-                className="font-bold text-xs md:text-sm rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground px-3 md:px-4 h-9 md:h-10"
-              >
-                Giriş
-              </Button>
-              <Button 
-                onClick={handleGoogleLogin} 
-                className="font-black text-xs md:text-sm rounded-full px-4 md:px-5 h-9 md:h-10 shadow-lg shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 transition-all"
-              >
-                ÜYE OL <ArrowRight size={14} className="ml-1.5 hidden sm:block" />
+            <div className="flex items-center gap-1.5 md:gap-2 hidden md:flex">
+              <Button onClick={handleGoogleLogin} variant="ghost" className="font-bold text-sm rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground px-4 h-10">Giriş</Button>
+              <Button onClick={handleGoogleLogin} className="font-black text-sm rounded-full px-5 h-10 shadow-lg shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 transition-all">
+                ÜYE OL <ArrowRight size={14} className="ml-1.5" />
               </Button>
             </div>
           )}
-
-          <div className="hidden md:flex items-center">
-             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground rounded-full h-9 w-9 ml-1">
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 rounded-xl p-2 border-border/50">
-                      <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground uppercase tracking-wider pl-2">Platform</DropdownMenuLabel>
-                      <DropdownMenuItem asChild><Link href="/" className="cursor-pointer font-bold py-2"><TrendingUp size={16} className="mr-3 text-primary"/> Piyasalar</Link></DropdownMenuItem>
-                      <DropdownMenuItem asChild><Link href="/leaderboard" className="cursor-pointer font-bold py-2"><Trophy size={16} className="mr-3 text-yellow-500"/> Liderlik Tablosu</Link></DropdownMenuItem>
-                      <DropdownMenuItem asChild><Link href="/rewards" className="cursor-pointer font-bold py-2"><Gift size={16} className="mr-3 text-pink-500"/> Ödüller</Link></DropdownMenuItem>
-                      <DropdownMenuItem asChild><Link href="/accuracy" className="cursor-pointer font-bold py-2"><ShieldCheck size={16} className="mr-3 text-green-500"/> Doğruluk Oranı</Link></DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground uppercase tracking-wider pl-2">Sistem & Bilgi</DropdownMenuLabel>
-                      <DropdownMenuItem asChild><Link href="/help" className="cursor-pointer font-bold py-2"><HelpCircle size={16} className="mr-3 text-blue-500"/> Yardım Merkezi</Link></DropdownMenuItem>
-                      <DropdownMenuItem asChild><Link href="/api-docs" className="cursor-pointer font-bold py-2"><Code size={16} className="mr-3 text-muted-foreground"/> API Dokümanı</Link></DropdownMenuItem>
-                      <DropdownMenuItem asChild><Link href="/terms" className="cursor-pointer font-bold py-2"><FileCheck size={16} className="mr-3 text-muted-foreground"/> Kullanım Koşulları</Link></DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <div className="p-2 flex items-center justify-between pl-3 pr-1">
-                        <span className="text-sm font-bold text-muted-foreground">Tema Değiştir</span>
-                        <ThemeToggle />
-                      </div>
-                </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
         </div>
       </div>
 
       {/* --- KATMAN 2: ANA KATEGORİLER --- */}
       <div className="border-b border-border/40 bg-background/95 relative group">
         <div className="absolute left-0 top-0 bottom-0 items-center px-2 bg-gradient-to-r from-background via-background to-transparent w-20 justify-start z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
-          <Button variant="ghost" size="icon" className="h-8 w-8 bg-background shadow-md rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollCategories('left')}>
-            <ChevronLeft size={14} />
-          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 bg-background shadow-md rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollCategories('left')}><ChevronLeft size={14} /></Button>
         </div>
 
         <div className="container mx-auto px-4 max-w-[1800px]">
@@ -302,24 +254,22 @@ export function Navbar() {
         </div>
         
         <div className="absolute right-0 top-0 bottom-0 items-center px-2 bg-gradient-to-l from-background via-background to-transparent w-20 justify-end z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex">
-          <Button variant="ghost" size="icon" className="h-8 w-8 bg-background shadow-md rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollCategories('right')}>
-            <ChevronRight size={14} />
-          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 bg-background shadow-md rounded-full border border-border/50 text-foreground hover:text-primary" onClick={() => scrollCategories('right')}><ChevronRight size={14} /></Button>
         </div>
       </div>
 
+      {/* MOBİL ANA ARAMA (INPUT ZOOM ENGELLENDİ) */}
       <div className="md:hidden py-2 px-4 border-b border-border/40 bg-secondary/10">
          <form onSubmit={handleSearch} className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input type="search" placeholder="Piyasalarda ara..." className="w-full pl-10 h-10 bg-background border-border/50 focus:border-primary/50 transition-all rounded-xl text-sm shadow-sm" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input type="search" placeholder="Piyasalarda ara..." className="w-full pl-10 h-12 bg-background border-border/50 focus:border-primary/50 transition-all rounded-xl text-[16px] shadow-sm" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
         </form>
       </div>
 
-      {/* --- KATMAN 4: ALT ETİKETLER VE TRENDLER (TRENDLER SAĞA ALINDI) --- */}
-      <div className="hidden md:block bg-secondary/5 border-b border-border/40">
+      {/* --- KATMAN 4: ALT ETİKETLER (MOBİLDE GÖRÜNÜR, ARAMA GİZLİ) --- */}
+      <div className="bg-secondary/5 border-b border-border/40">
         <div className="container mx-auto px-4 max-w-[1800px] flex items-center justify-between gap-2 py-2">
            
-           {/* SOL KISIM: Kaydettiklerim + Kaydırılabilir Etiketler */}
            <div className="flex items-center gap-2 flex-1 overflow-hidden pr-2">
              <button onClick={() => { if(!user) return handleGoogleLogin(); updateParams([{ key: "watchlist", value: searchParams.get("watchlist") ? null : "true" }]); }} className={cn("h-8 px-3 rounded-full transition-colors whitespace-nowrap flex items-center gap-1.5 border text-xs font-bold shrink-0", searchParams.get("watchlist") ? "bg-yellow-500/10 text-yellow-600 border-yellow-500/30" : "bg-background border-border/50 text-muted-foreground hover:bg-secondary")}>
                 <Bookmark size={14} className={cn(searchParams.get("watchlist") && "fill-current")} /> <span className="hidden sm:inline-block">Kaydettiklerim</span>
@@ -349,19 +299,19 @@ export function Navbar() {
              </div>
            </div>
 
-           {/* SAĞ KISIM: Trendler (Arama Butonu) */}
-           <div className="shrink-0 border-l border-border/50 pl-2">
+           {/* SAĞ KISIM: Trendler Butonu (SADECE MASAÜSTÜ) */}
+           <div className="shrink-0 border-l border-border/50 pl-2 hidden md:block">
              <Popover open={isTagPopoverOpen} onOpenChange={setIsTagPopoverOpen}>
                 <PopoverTrigger asChild>
                     <Button variant="outline" size="sm" className="h-8 px-3 rounded-full border-border/50 bg-background text-muted-foreground hover:text-foreground font-bold text-xs gap-2">
-                        <Search size={14} /> <span className="hidden sm:inline-block">Trendler</span>
+                        <Search size={14} /> <span>Trendler</span>
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-[300px] p-0 shadow-2xl rounded-2xl border-border/50" sideOffset={8}>
                     <form onSubmit={handleTagSearch} className="p-3 border-b border-border/50 bg-secondary/20">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input autoFocus placeholder="Etiket veya soru ara..." className="pl-9 h-10 bg-background border-border/50 rounded-xl focus-visible:ring-1 focus-visible:ring-primary shadow-sm" value={tagSearchQuery} onChange={(e) => setTagSearchQuery(e.target.value)} />
+                            <Input autoFocus placeholder="Etiket veya soru ara..." className="pl-9 h-10 bg-background border-border/50 rounded-xl focus-visible:ring-1 focus-visible:ring-primary shadow-sm text-[16px]" value={tagSearchQuery} onChange={(e) => setTagSearchQuery(e.target.value)} />
                         </div>
                     </form>
                     <div className="p-4 max-h-[300px] overflow-y-auto no-scrollbar">
