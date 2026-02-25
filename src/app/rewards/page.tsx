@@ -67,10 +67,10 @@ export default async function RewardsPage() {
   ];
 
   const rewards = [
-    { title: "Noly Özel Avatar Çerçevesi", cost: 5000, icon: Crown, color: "text-yellow-500", bg: "bg-yellow-500/10" },
-    { title: "Koyu Tema 'Pro' Rozeti", cost: 15000, icon: Zap, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { title: "Noly Market Özel Tasarım T-shirt", cost: 50000, icon: Gift, color: "text-pink-500", bg: "bg-pink-500/10" },
-    { title: "Piyasa Açma İsteği Hakkı", cost: 100000, icon: TrendingUp, color: "text-green-500", bg: "bg-green-500/10" },
+    { title: "Noly Özel Avatar Çerçevesi", cost: 50000, icon: Crown, color: "text-yellow-500", bg: "bg-yellow-500/10" },
+    { title: "Koyu Tema 'Pro' Rozeti", cost: 150000, icon: Zap, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { title: "Noly Market Özel Tasarım T-shirt", cost: 500000, icon: Gift, color: "text-pink-500", bg: "bg-pink-500/10" },
+    { title: "Piyasa Açma İsteği Hakkı", cost: 1000000, icon: TrendingUp, color: "text-green-500", bg: "bg-green-500/10" },
   ];
 
   return (
