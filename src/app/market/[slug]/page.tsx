@@ -6,7 +6,7 @@ import { MarketChart } from "@/components/market/market-chart";
 import { PredictionPanel } from "@/components/market/prediction-panel";
 import { MarketComments } from "@/components/market/market-comments";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Info, CheckCircle2, XCircle, Activity, TrendingUp } from "lucide-react";
+import { Clock, Info, CheckCircle2, XCircle, Activity, TrendingUp, AlertTriangle } from "lucide-react";
 
 export async function generateMetadata({ 
   params 
@@ -44,129 +44,126 @@ export default async function MarketPage({ params }: { params: Promise<{ slug: s
 
   if (!market) return notFound();
 
-  const [chartData, comments] = await Promise.all([
-    getMarketPrices(market.id, market.market_type),
-    getMarketComments(market.id)
-  ]);
+  // PREMIUM HATA YAKALAMA VE VERİ ÇEKME
+  let chartData: any[] = [];
+  let comments: any[] = [];
+  let chartError = false;
 
- // KESİN ÇÖZÜM: Google Botları için 'Breadcrumb' (İçerik Haritası) Şeması
+  try {
+    const results = await Promise.all([
+      getMarketPrices(market.id, market.market_type),
+      getMarketComments(market.id)
+    ]);
+    
+    // Veri gelse de gelmese de değişkene atıyoruz. getMarketPrices null dönse bile [] yaparız.
+    chartData = results[0] || [];
+    comments = results[1] || [];
+  } catch (error) {
+    console.error("Market Detay Veri Çekme Hatası:", error);
+    chartError = true; // Eğer API çökerse uygulamayı patlatma, sadece grafiği gizle
+  }
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Noly Market",
-        "item": "https://nolymarket.com/"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": market.category ? (market.category.charAt(0).toUpperCase() + market.category.slice(1)) : "Piyasalar",
-        "item": `https://nolymarket.com/category/${market.category?.toLowerCase() || 'genel'}`
-      },
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": market.question,
-        "item": `https://nolymarket.com/market/${market.slug}`
-      }
+      { "@type": "ListItem", "position": 1, "name": "Noly Market", "item": "https://nolymarket.com/" },
+      { "@type": "ListItem", "position": 2, "name": market.category ? (market.category.charAt(0).toUpperCase() + market.category.slice(1)) : "Piyasalar", "item": `https://nolymarket.com/category/${market.category?.toLowerCase() || 'genel'}` },
+      { "@type": "ListItem", "position": 3, "name": market.question, "item": `https://nolymarket.com/market/${market.slug}` }
     ]
   };
 
+  const isResolved = market.status === 'resolved';
+  const isCancelled = market.status === 'cancelled';
+  const isActive = market.status === 'active';
+
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       
-      <div className="container mx-auto px-4 py-6 md:py-8 max-w-[1400px] animate-in fade-in duration-500">
+      {/* Container boşlukları optimize edildi */}
+      <div className="container mx-auto px-2 sm:px-4 py-4 md:py-8 max-w-[1400px] animate-in fade-in duration-500">
         
-        {/* MOBİL UYUMLU (MOBILE-FIRST) BÜYÜK GRID DÜZENİ */}
-        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-8">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 lg:gap-8">
           
-          {/* SOL ALAN (Grafik, Açıklama, Yorumlar) */}
-          <div className="lg:col-span-8 flex flex-col gap-6">
+          {/* SOL ALAN */}
+          <div className="lg:col-span-8 flex flex-col gap-4 sm:gap-6">
             
-            {/* 1. BAŞLIK VE ETİKETLER (HEADER) */}
-            <div className="space-y-4 mb-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary" className="uppercase tracking-widest text-[10px] font-black border-none">
+            {/* 1. PREMIUM BAŞLIK ALANI */}
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                
+                <Badge variant="secondary" className="uppercase tracking-widest text-[9px] sm:text-[10px] font-black border-none px-2 py-0.5 sm:py-1">
                   {market.category}
                 </Badge>
                 
-                {/* DİNAMİK DURUM ROZETLERİ */}
-                {market.status === 'resolved' && (
-                  <Badge className="bg-green-500/10 hover:bg-green-500/20 text-green-500 border-none uppercase tracking-widest text-[10px] font-black">
-                    <CheckCircle2 size={12} className="mr-1"/> Sonuçlandı
-                  </Badge>
-                )}
-                {market.status === 'cancelled' && (
-                  <Badge className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border-none uppercase tracking-widest text-[10px] font-black">
-                    <XCircle size={12} className="mr-1"/> İptal Edildi
-                  </Badge>
-                )}
-                {market.status === 'active' && (
-                  <Badge className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 border-none uppercase tracking-widest text-[10px] font-black">
-                    <Activity size={12} className="mr-1"/> İşleme Açık
-                  </Badge>
-                )}
+                {isResolved && <Badge className="bg-green-500/10 hover:bg-green-500/20 text-green-500 border-none uppercase tracking-widest text-[9px] sm:text-[10px] font-black"><CheckCircle2 size={12} className="mr-1"/> Sonuçlandı</Badge>}
+                {isCancelled && <Badge className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border-none uppercase tracking-widest text-[9px] sm:text-[10px] font-black"><XCircle size={12} className="mr-1"/> İptal Edildi</Badge>}
+                {isActive && <Badge className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 border-none uppercase tracking-widest text-[9px] sm:text-[10px] font-black"><Activity size={12} className="mr-1"/> İşleme Açık</Badge>}
 
-                {/* HACİM GÖSTERGESİ (Zenginlik katar) */}
-                <Badge variant="outline" className="uppercase tracking-widest text-[10px] font-black border-border/50 text-muted-foreground">
+                <Badge variant="outline" className="uppercase tracking-widest text-[9px] sm:text-[10px] font-black border-border/50 text-muted-foreground px-2 py-0.5 sm:py-1">
                   <TrendingUp size={12} className="mr-1 text-primary"/> 
                   {market.total_volume_tp ? Math.round(market.total_volume_tp).toLocaleString() : 0} TP Hacim
                 </Badge>
 
-                {/* BİTİŞ TARİHİ */}
-                <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground font-bold ml-auto bg-secondary/30 px-2 py-1 rounded-md">
+                <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-muted-foreground font-bold ml-auto bg-secondary/30 px-2 py-1 sm:py-1.5 rounded-md">
                   <Clock size={12} />
                   Bitiş: {new Date(market.end_date).toLocaleDateString("tr-TR")}
                 </div>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-snug">
+              <h1 className="text-xl sm:text-3xl md:text-4xl font-black tracking-tight leading-snug pr-2">
                 {market.question}
               </h1>
             </div>
 
-            {/* 2. GRAFİK ALANI */}
-            <div className="bg-card border-2 border-border/50 rounded-3xl p-4 sm:p-6 h-[350px] sm:h-[400px] shadow-lg relative overflow-hidden">
-               {/* Arka plan süslemesi */}
-               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-               <div className="relative z-10 h-full w-full">
-                 <MarketChart data={chartData} market={market} />
-               </div>
-            </div>
-
-            {/* 3. MOBİLDE TAHMİN PANELİ (SADECE MOBİLDE GRAFİĞİN HEMEN ALTINDA ÇIKAR) */}
-            <div className="block lg:hidden mt-2">
+            {/* 2. MOBİL TAHMİN PANELİ (Üstte) */}
+            <div className="block lg:hidden mt-2 mb-2">
               <PredictionPanel market={market} />
             </div>
 
+            {/* 3. PREMIUM GRAFİK ALANI */}
+            <div className="bg-card border border-border/50 sm:border-2 rounded-2xl sm:rounded-3xl p-3 sm:p-6 h-[280px] sm:h-[420px] shadow-sm relative overflow-hidden group">
+               {/* Arka plan süslemesi (Neon Glow) */}
+               <div className="absolute top-0 right-0 w-48 sm:w-80 h-48 sm:h-80 bg-primary/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none transition-all duration-700 group-hover:bg-primary/10" />
+               
+               <div className="relative z-10 h-full w-full">
+                 {/* Grafik Yükleme Mantığı Değişti: 
+                    Artık data boş olsa bile MarketChart'ı çağırıyoruz. 
+                    Çünkü MarketChart'ın içinde "Hiç veri yoksa başlangıç verisinden düz çizgi çek" mantığı yazdık.
+                 */}
+                 {!chartError ? (
+                   <MarketChart data={chartData} market={market} />
+                 ) : (
+                   <div className="flex flex-col items-center justify-center h-full text-center opacity-50 bg-secondary/10 rounded-xl border border-dashed border-border/50">
+                     <AlertTriangle size={40} className="mb-3 text-red-500/50" />
+                     <p className="font-bold text-sm">Grafik Verisi Alınamadı</p>
+                     <p className="text-xs text-muted-foreground mt-1 max-w-[200px]">Sunucu kaynaklı bir hata oluştu, ancak yatırım yapmaya devam edebilirsiniz.</p>
+                   </div>
+                 )}
+               </div>
+            </div>
+
             {/* 4. AÇIKLAMA VE KURALLAR KUTUSU */}
-            <div className="bg-secondary/10 rounded-[2rem] p-6 sm:p-8 border border-border/50 shadow-sm relative overflow-hidden mt-2">
-              {/* Dekoratif sol şerit */}
-              <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-primary to-purple-500"></div>
+            <div className="bg-secondary/10 rounded-2xl sm:rounded-[2rem] p-5 sm:p-8 border border-border/50 shadow-sm relative overflow-hidden mt-2">
+              <div className="absolute left-0 top-0 bottom-0 w-1 sm:w-1.5 bg-gradient-to-b from-primary to-purple-500"></div>
               
-              <h3 className="font-black text-lg flex items-center gap-2 mb-3 tracking-tight">
-                <Info size={20} className="text-primary" /> Piyasa Hakkında / Kurallar
+              <h3 className="font-black text-base sm:text-lg flex items-center gap-2 mb-2 sm:mb-3 tracking-tight">
+                <Info size={18} className="text-primary" /> Piyasa Hakkında
               </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed font-medium whitespace-pre-wrap">
-                {market.description || "Bu piyasa için özel bir kural veya açıklama girilmemiştir. Genel piyasa kuralları geçerlidir."}
+              <p className="text-[13px] sm:text-sm text-muted-foreground leading-relaxed font-medium whitespace-pre-wrap">
+                {market.description || "Bu piyasa için özel bir kural girilmemiştir. Standart Noly Market kuralları geçerlidir."}
               </p>
             </div>
 
-            {/* 5. YORUMLAR (En alt kısım) */}
-            <div className="pt-6 sm:pt-8 border-t border-border/50">
+            {/* 5. YORUMLAR / TROLLBOX */}
+            <div className="pt-4 sm:pt-6">
                <MarketComments marketId={market.id} initialComments={comments} />
             </div>
 
           </div>
 
-          {/* SAĞ ALAN (Masaüstünde Sabit Duran Tahmin Paneli) */}
+          {/* SAĞ ALAN (Masaüstü Tahmin Paneli) */}
           <div className="hidden lg:block lg:col-span-4">
             <div className="sticky top-24">
               <PredictionPanel market={market} />

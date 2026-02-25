@@ -81,7 +81,7 @@ export async function getMarketDetail(slug: string) {
   return data;
 }
 
-// PİYASA FİYAT GEÇMİŞİNİ ÇEKME (Grafik için)
+// PİYASA FİYAT GEÇMİŞİNİ ÇEKME (Grafik için Optimize Edildi)
 export async function getMarketPrices(marketId: number, marketType: string) {
   const supabase = await createServerSideClient();
   
@@ -93,12 +93,27 @@ export async function getMarketPrices(marketId: number, marketType: string) {
       .order("created_at", { ascending: true });
     return data || [];
   } else {
+    // Çoklu seçenek verilerini çekerken option verilerini açıkça alıyoruz
     const { data } = await supabase
       .from("prices")
-      .select("option_id, probability, created_at, market_options(name, color)")
+      .select(`
+        probability, 
+        created_at,
+        market_options!inner (id, name, color)
+      `)
       .eq("market_id", marketId)
       .order("created_at", { ascending: true });
-    return data || [];
+      
+    // Recharts'ın anlayabileceği düzleştirilmiş formata (flat) çeviriyoruz
+    const formattedData = (data || []).map((row: any) => ({
+      created_at: row.created_at,
+      probability: row.probability,
+      option_id: row.market_options?.id,
+      option_name: row.market_options?.name,
+      option_color: row.market_options?.color
+    }));
+    
+    return formattedData;
   }
 }
 
