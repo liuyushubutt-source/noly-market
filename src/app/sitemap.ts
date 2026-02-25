@@ -1,8 +1,6 @@
 import { MetadataRoute } from 'next';
 import { getAllMarketSlugs } from '@/actions/market-actions'; // Yeni yazdığımız fonksiyonu import ettik
-
-export const revalidate = 3600; // Sitemap her 1 saatte bir güncellensin (Cache)
-
+export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://nolymarket.com'; // Domain adresin
 

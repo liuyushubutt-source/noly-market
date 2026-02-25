@@ -4,13 +4,13 @@ import { Mail, MapPin, Send, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 export default function ContactPage() {
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // API entegrasyonu yapılana kadar sahte başarı mesajı
     toast.success("Mesajınız başarıyla iletildi! Ekibimiz en kısa sürede dönüş yapacaktır.");
   };
 
@@ -90,6 +90,3 @@ export default function ContactPage() {
     </div>
   );
 }
-
-// Sadece Contact sayfasında hata vermemesi için sahte bir Badge bileşeni (Eğer globalde varsa üstten import edebilirsin)
-import { Badge } from "@/components/ui/badge";
