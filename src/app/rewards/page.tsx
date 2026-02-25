@@ -1,6 +1,6 @@
 import { createServerSideClient } from "@/lib/server-utils";
 import { QuestButton } from "@/components/rewards/quest-button";
-import { Gift, Wallet, TrendingUp, Zap, Crown, CheckCircle2, Flame, Target, MessageSquare, Lock, ArrowRight, CalendarCheck, Share2, BookmarkPlus, Trophy } from "lucide-react";
+import { Gift, Wallet, TrendingUp, Zap, Crown, CheckCircle2, Flame, Target, MessageSquare, Lock, ArrowRight, BookmarkPlus, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,25 +15,55 @@ export default async function RewardsPage() {
 
   let tpBalance = 0;
   let completedQuests: string[] = []; 
+  
+  // GÖREV DOĞRULAMA (VERIFICATION) DEĞİŞKENLERİ
+  let hasPrediction = false;
+  let hasComment = false;
+  let isProfileComplete = false;
+  let hasBookmark = false;
+  let hasWin = false;
+  let hasHighRoller = false;
 
   if (user) {
-    const { data: profile } = await supabase.from("profiles").select("tp_balance").eq("id", user.id).single();
+    const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
     tpBalance = profile?.tp_balance ?? 0;
+    
+    // Profil tam mı? (İsim ve Avatar girilmiş mi?)
+    isProfileComplete = !!(profile?.full_name && profile?.avatar_url && profile?.avatar_url !== "");
 
+    // Alınmış ödüller
     const { data: userQuests } = await supabase.from("user_quests").select("quest_id").eq("user_id", user.id);
     completedQuests = Array.isArray(userQuests) ? userQuests.map(q => q.quest_id) : [];
+
+    // TAHMİN KONTROLÜ (En az 1 tahmini var mı?)
+    const { count: predCount } = await supabase.from('predictions').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
+    hasPrediction = (predCount || 0) > 0;
+
+    // YORUM KONTROLÜ (En az 1 yorumu var mı?)
+    const { count: commentCount } = await supabase.from('comments').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
+    hasComment = (commentCount || 0) > 0;
+
+    // FAVORİ KONTROLÜ (En az 1 favorisi var mı?)
+    const { count: bookmarkCount } = await supabase.from('bookmarks').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
+    hasBookmark = (bookmarkCount || 0) > 0;
+
+    // İLK ZAFER KONTROLÜ (Kazandığı tahmin var mı?)
+    const { count: winCount } = await supabase.from('predictions').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_winner', true);
+    hasWin = (winCount || 0) > 0;
+
+    // CESUR YÜREK KONTROLÜ (1000 TP ve üzeri yatırımı var mı?)
+    const { count: highRollerCount } = await supabase.from('predictions').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('amount_tp', 1000);
+    hasHighRoller = (highRollerCount || 0) > 0;
   }
 
-  // ZENGİNLEŞTİRİLMİŞ GÖREV LİSTESİ (8 Adet Harika Görev)
+  // GERÇEK DOĞRULAMALI GÖREV LİSTESİ
   const quests = [
-    { id: "daily_login", title: "Günlük Giriş", desc: "Sisteme bugün de giriş yaptın. Günlük hediyeni hemen kap!", reward: 50, icon: CalendarCheck, isCompleted: completedQuests.includes("daily_login"), actionText: "Piyasalara Git", link: "/" },
-    { id: "first_prediction", title: "İlk Öngörünü Yap", desc: "Herhangi bir piyasada ilk pozisyonunu alarak maceraya başla.", reward: 500, icon: Target, isCompleted: completedQuests.includes("first_prediction"), actionText: "Piyasalara Git", link: "/" },
-    { id: "first_comment", title: "Tartışmaya Katıl", desc: "Bir piyasanın tartışma panosunda mantıklı bir yorum bırak.", reward: 150, icon: MessageSquare, isCompleted: completedQuests.includes("first_comment"), actionText: "Piyasa Seç", link: "/" },
-    { id: "profile_complete", title: "Profilini Tamamla", desc: "Kendine havalı bir isim ve dikkat çekici bir avatar seç.", reward: 300, icon: Crown, isCompleted: completedQuests.includes("profile_complete"), actionText: "Profiline Git", link: "/profile" },
-    { id: "share_market", title: "Sesi Yükselt", desc: "Sevdiğin bir piyasayı X (Twitter) veya WhatsApp'ta paylaş.", reward: 200, icon: Share2, isCompleted: completedQuests.includes("share_market"), actionText: "Piyasa Seç", link: "/" },
-    { id: "first_bookmark", title: "Yakın Takip", desc: "İlgini çeken bir piyasayı izleme listene (favorilere) ekle.", reward: 100, icon: BookmarkPlus, isCompleted: completedQuests.includes("first_bookmark"), actionText: "Keşfet", link: "/" },
-    { id: "first_win", title: "İlk Zafer", desc: "Yaptığın bir tahmin doğru çıksın ve ilk kazancını elde et.", reward: 1000, icon: Trophy, isCompleted: completedQuests.includes("first_win"), actionText: "Portfolyoya Bak", link: "/portfolio" },
-    { id: "high_roller", title: "Cesur Yürek", desc: "Tek bir öngörüde en az 1.000 TP yatırarak ne kadar iddialı olduğunu göster.", reward: 1500, icon: Zap, isCompleted: completedQuests.includes("high_roller"), actionText: "Piyasalara Git", link: "/" },
+    { id: "first_prediction", title: "İlk Öngörünü Yap", desc: "Herhangi bir piyasada pozisyon al.", reward: 500, icon: Target, isEligible: hasPrediction, isCompleted: completedQuests.includes("first_prediction"), link: "/" },
+    { id: "first_comment", title: "Tartışmaya Katıl", desc: "Bir piyasanın panosunda yorum bırak.", reward: 150, icon: MessageSquare, isEligible: hasComment, isCompleted: completedQuests.includes("first_comment"), link: "/" },
+    { id: "profile_complete", title: "Profilini Tamamla", desc: "İsim ve dikkat çekici bir avatar seç.", reward: 300, icon: Crown, isEligible: isProfileComplete, isCompleted: completedQuests.includes("profile_complete"), link: "/profile" },
+    { id: "first_bookmark", title: "Yakın Takip", desc: "İlgini çeken bir piyasayı favorilerine ekle.", reward: 100, icon: BookmarkPlus, isEligible: hasBookmark, isCompleted: completedQuests.includes("first_bookmark"), link: "/" },
+    { id: "first_win", title: "İlk Zafer", desc: "Yaptığın bir tahmin doğru çıksın.", reward: 1000, icon: Trophy, isEligible: hasWin, isCompleted: completedQuests.includes("first_win"), link: "/portfolio" },
+    { id: "high_roller", title: "Cesur Yürek", desc: "Tek bir öngörüye en az 1.000 TP yatır.", reward: 1500, icon: Zap, isEligible: hasHighRoller, isCompleted: completedQuests.includes("high_roller"), link: "/" },
   ];
 
   const rewards = [
@@ -63,14 +93,15 @@ export default async function RewardsPage() {
 
         {user ? (
           <div className="flex flex-col sm:flex-row md:flex-col gap-3 w-full md:w-auto z-10">
+            {/* SAHTE GÜNLÜK SERİ YERİNE GERÇEK GÖREV İSTATİSTİĞİ */}
             <div className="bg-background/80 backdrop-blur border border-border/50 p-4 rounded-3xl flex items-center justify-between gap-6 shadow-sm flex-1">
               <div className="flex items-center gap-3">
-                <div className="bg-orange-500/20 p-2.5 rounded-xl">
-                  <Flame className="text-orange-500 fill-orange-500 h-6 w-6" />
+                <div className="bg-green-500/20 p-2.5 rounded-xl">
+                  <Target className="text-green-500 h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Günlük Seri</p>
-                  <p className="font-black text-lg">3 Gün</p>
+                  <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Tamamlanan Görev</p>
+                  <p className="font-black text-lg">{completedQuests.length} / {quests.length}</p>
                 </div>
               </div>
             </div>
@@ -104,7 +135,6 @@ export default async function RewardsPage() {
         </TabsList>
 
         <TabsContent value="quests" className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-          {/* Görev sayısını artırdığımız için Grid yapısını mobilde 1, tablette 2, dev ekranda 3 kolon yaptık */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {quests.map((quest) => {
               const QuestIcon = quest.icon;
@@ -128,13 +158,8 @@ export default async function RewardsPage() {
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    {!quest.isCompleted && (
-                      <Button asChild variant="ghost" size="sm" className="font-bold text-muted-foreground hover:text-foreground hidden xl:flex">
-                        <Link href={quest.link}>{quest.actionText} <ArrowRight size={14} className="ml-1" /></Link>
-                      </Button>
-                    )}
-                    
-                    <QuestButton questId={quest.id} reward={quest.reward} isCompleted={quest.isCompleted} />
+                    {/* YENİ NESİL BUTON ENTEGRASYONU */}
+                    <QuestButton questId={quest.id} reward={quest.reward} isCompleted={quest.isCompleted} isEligible={quest.isEligible} link={quest.link} />
                   </div>
                 </div>
 
@@ -152,13 +177,11 @@ export default async function RewardsPage() {
 
               return (
                 <div key={i} className="bg-card border-2 border-border/50 rounded-[2rem] p-5 sm:p-6 shadow-sm hover:border-primary/30 transition-all flex flex-col h-full relative overflow-hidden group">
-                  
                   {!canAfford && (
                      <div className="absolute top-4 right-4 p-2 bg-secondary/50 rounded-full text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity">
                        <Lock size={14} />
                      </div>
                   )}
-
                   <div className="flex items-start gap-4 mb-5">
                     <div className={`p-3 sm:p-4 rounded-2xl shrink-0 ${reward.bg} border border-border/10`}>
                        <RewardIcon className={`${reward.color} h-6 w-6 sm:h-8 sm:w-8`} />
@@ -168,22 +191,14 @@ export default async function RewardsPage() {
                       <p className="font-black text-lg sm:text-xl leading-none">{reward.cost.toLocaleString()} <span className="text-[10px] sm:text-xs text-muted-foreground">TP</span></p>
                     </div>
                   </div>
-                  
                   <h3 className="text-sm sm:text-base font-bold mb-auto leading-tight pr-4">{reward.title}</h3>
-                  
                   <div className="mt-6 sm:mt-8 space-y-3">
                     <div className="flex justify-between text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase">
                       <span>İlerleme</span>
                       <span className={canAfford ? 'text-green-500 font-black' : ''}>%{Math.floor(progress)}</span>
                     </div>
-                    
                     <Progress value={progress} className={`h-2 sm:h-2.5 ${canAfford ? 'bg-green-500/20' : ''}`} indicatorColor={canAfford ? 'bg-green-500' : ''} />
-                    
-                    <Button 
-                      variant={canAfford ? "default" : "secondary"} 
-                      className={`w-full mt-2 font-black h-10 sm:h-12 text-xs sm:text-sm ${canAfford ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-muted-foreground'}`} 
-                      disabled={!canAfford}
-                    >
+                    <Button variant={canAfford ? "default" : "secondary"} className={`w-full mt-2 font-black h-10 sm:h-12 text-xs sm:text-sm ${canAfford ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-muted-foreground'}`} disabled={!canAfford}>
                       {canAfford ? <><CheckCircle2 size={16} className="mr-2"/> HEMEN TALEP ET</> : "YETERSİZ TP"}
                     </Button>
                   </div>
@@ -192,7 +207,6 @@ export default async function RewardsPage() {
             })}
           </div>
         </TabsContent>
-
       </Tabs>
     </div>
   );
