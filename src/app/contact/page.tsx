@@ -3,7 +3,6 @@
 import { Mail, MapPin, Send, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
@@ -77,7 +76,12 @@ export default function ContactPage() {
 
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Mesajınız</label>
-              <Textarea required placeholder="Detayları buraya yazabilirsiniz..." className="min-h-[150px] rounded-xl bg-secondary/20 border-border/50 focus-visible:ring-primary resize-none p-4" />
+              {/* Sorunu çıkaran Textarea bileşeni yerine Tailwind ile tasarlanmış standart textarea kullanıldı */}
+              <textarea 
+                required 
+                placeholder="Detayları buraya yazabilirsiniz..." 
+                className="flex min-h-[150px] w-full rounded-xl bg-secondary/20 border border-border/50 px-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary resize-none placeholder:text-muted-foreground" 
+              />
             </div>
 
             <Button type="submit" className="w-full h-14 rounded-xl font-black text-sm tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all">
