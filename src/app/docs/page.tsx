@@ -1,5 +1,7 @@
 import { Target, Coins, Trophy, Zap, Info } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Nasıl Çalışır? | Noly Market",
   description: "Noly Market'te nasıl işlem yapılır ve TP kazanılır öğrenin.",

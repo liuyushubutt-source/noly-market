@@ -1,6 +1,8 @@
 import { ShieldCheck, Lock, EyeOff, Server } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Gizlilik ve Kullanım Şartları | Noly Market",
   description: "Noly Market platformunun gizlilik politikası ve kullanıcı sözleşmesi.",

@@ -111,7 +111,12 @@ export function Footer() {
                   Gizlilik Politikası
                 </Link>
               </li>
-             
+              <li>
+                <Link href="/contact" className="hover:text-primary transition-all duration-300 flex items-center group">
+                  <span className="h-1.5 w-1.5 bg-primary rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                  İletişim & Destek
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
