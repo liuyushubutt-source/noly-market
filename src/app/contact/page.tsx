@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { Mail, MapPin, Send, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,9 +9,8 @@ import { toast } from "sonner";
 
 export const dynamic = "force-dynamic";
 
-
-export default function ContactPage() {
-  
+// Sayfanın asıl içeriğini ayrı bir bileşen içine aldık
+function ContactContent() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     toast.success("Mesajınız başarıyla iletildi! Ekibimiz en kısa sürede dönüş yapacaktır.");
@@ -79,7 +79,6 @@ export default function ContactPage() {
 
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Mesajınız</label>
-              {/* Sorunu çıkaran Textarea bileşeni yerine Tailwind ile tasarlanmış standart textarea kullanıldı */}
               <textarea 
                 required 
                 placeholder="Detayları buraya yazabilirsiniz..." 
@@ -95,5 +94,15 @@ export default function ContactPage() {
 
       </div>
     </div>
+  );
+}
+
+// Ana sayfa component'i artık Suspense ile sarmalanmış halde export ediliyor
+export default function ContactPage() {
+  return (
+    // Eğer saniyelik bir gecikme olursa ekranda patlamak yerine yumuşak bir yükleniyor ekranı gösterecek
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center font-bold text-muted-foreground animate-pulse">Sayfa yükleniyor...</div>}>
+      <ContactContent />
+    </Suspense>
   );
 }
