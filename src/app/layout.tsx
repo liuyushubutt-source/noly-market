@@ -2,19 +2,20 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { BalanceProvider } from "@/context/balance-context";
-import { ThemeProvider } from "@/components/theme-provider"; // Tema
-import { BottomNav } from "@/components/shared/bottom-nav"; // Alt Menü
+import { ThemeProvider } from "@/components/theme-provider";
+import { BottomNav } from "@/components/shared/bottom-nav";
 import { Toaster } from "sonner";
 import { Navbar } from "@/components/shared/navbar";
 import { Footer } from "@/components/shared/footer";
+import { Suspense } from "react"; // 1. Suspense'i import ettik
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://nolymarket.com"), // Sitenin temel URL'si
+  metadataBase: new URL("https://nolymarket.com"),
   title: {
     default: "Noly Market | Türkiye'nin En Büyük Tahmin Pazarı",
-    template: "%s | Noly Market" // Alt sayfalarda "Spor | Noly Market" şeklinde görünmesini sağlar
+    template: "%s | Noly Market"
   },
   description: "Siyaset, spor, teknoloji ve ekonomi üzerine gerçek zamanlı tahminlerde bulunun. Gündemi takip ederek bilginizi kazanca dönüştürün ve portföyünüzü büyütün.",
   keywords: ["tahmin pazarı", "prediction market", "gündem tahmin", "siyaset", "kripto", "spor"],
@@ -35,7 +36,6 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   
-  // Google'ın siteyi bir organizasyon/platform olarak tanıması için Schema Markup
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -52,7 +52,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="tr" suppressHydrationWarning> 
       <head>
-        {/* Schema Markup'ı buraya ekliyoruz */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -62,10 +61,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <BalanceProvider>
             <div className="relative flex min-h-screen flex-col">
-              <Navbar />
+              {/* 2. Navbar'ı Suspense içine aldık - Build hatasını çözen kritik hamle */}
+              <Suspense fallback={<div className="h-16 w-full bg-background animate-pulse" />}>
+                <Navbar />
+              </Suspense>
+              
               <main className="flex-1 pb-16 md:pb-0">{children}</main>
+              
               <Footer />
-              <BottomNav />
+              
+              {/* Eğer BottomNav içinde de arama veya parametre varsa onu da sarmalayabilirsin */}
+              <Suspense fallback={null}>
+                <BottomNav />
+              </Suspense>
             </div>
             <Toaster richColors position="bottom-right" />
           </BalanceProvider>
