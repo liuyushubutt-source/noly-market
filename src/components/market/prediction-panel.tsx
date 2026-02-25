@@ -37,6 +37,7 @@ export function PredictionPanel({ market }: { market: any }) {
     if (!user) return toast.error("Giriş yapmalısın.");
     if (!selectedSide) return toast.error("Seçim yapın.");
     
+    // Zaten arayüzde engelledik ama backend'e giderken tekrar garantiye alıyoruz
     const safeAmount = Math.floor(Number(amount));
     if (!safeAmount || safeAmount <= 0) return toast.error("Geçerli tutar girin.");
     if (safeAmount > balance) return toast.error("Yetersiz bakiye.");
@@ -160,7 +161,7 @@ export function PredictionPanel({ market }: { market: any }) {
         )}
       </div>
 
-      {/* MİNİMALİST TUTAR GİRİŞİ */}
+      {/* MİNİMALİST TUTAR GİRİŞİ (VİRGÜL VE NOKTA ENGELLENDİ) */}
       <div className="bg-secondary/20 rounded-xl p-3 border border-border/50 focus-within:border-primary/40 focus-within:bg-secondary/30 transition-colors">
         <div className="flex justify-between items-center mb-1">
           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Tutar</span>
@@ -170,10 +171,16 @@ export function PredictionPanel({ market }: { market: any }) {
         </div>
         <div className="flex items-center justify-between">
           <input 
-            type="number" 
+            type="text" 
+            inputMode="numeric"
+            pattern="[0-9]*"
             placeholder="0"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => {
+              // RegExp ile RAKAM OLMAYAN tüm karakterleri (virgül, nokta, harf, eksi işareti) anında sil
+              const onlyNumbers = e.target.value.replace(/[^0-9]/g, '');
+              setAmount(onlyNumbers);
+            }}
             className="bg-transparent border-none outline-none text-xl sm:text-2xl font-black w-full text-foreground placeholder:text-muted-foreground/30"
           />
           <span className="text-xs font-black text-muted-foreground ml-2">TP</span>
