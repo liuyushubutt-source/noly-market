@@ -44,7 +44,6 @@ export default async function MarketPage({ params }: { params: Promise<{ slug: s
 
   if (!market) return notFound();
 
-  // PREMIUM HATA YAKALAMA VE VERİ ÇEKME
   let chartData: any[] = [];
   let comments: any[] = [];
   let chartError = false;
@@ -54,16 +53,16 @@ export default async function MarketPage({ params }: { params: Promise<{ slug: s
       getMarketPrices(market.id, market.market_type),
       getMarketComments(market.id)
     ]);
-    
-    // Veri gelse de gelmese de değişkene atıyoruz. getMarketPrices null dönse bile [] yaparız.
     chartData = results[0] || [];
     comments = results[1] || [];
   } catch (error) {
     console.error("Market Detay Veri Çekme Hatası:", error);
-    chartError = true; // Eğer API çökerse uygulamayı patlatma, sadece grafiği gizle
+    chartError = true;
   }
 
-  const jsonLd = {
+  // --- 🌟 SEO ALTIN VURUŞU: DİNAMİK QAPage ŞEMASI ---
+  // 1. Breadcrumb (Site Haritası Yolu) Şeması
+  const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
@@ -73,6 +72,41 @@ export default async function MarketPage({ params }: { params: Promise<{ slug: s
     ]
   };
 
+  // 2. Çoklu Seçenekleri ve Binary'i Dinamik Olarak Cevaplara (Answers) Çeviren Algoritma
+  let suggestedAnswers = [];
+  
+  if (market.market_type === 'binary') {
+    const yesProb = Math.round((market.yes_probability || 0.5) * 100);
+    const noProb = 100 - yesProb;
+    suggestedAnswers = [
+      { "@type": "Answer", "text": `Evet (%${yesProb} İhtimal)`, "url": `https://nolymarket.com/market/${market.slug}` },
+      { "@type": "Answer", "text": `Hayır (%${noProb} İhtimal)`, "url": `https://nolymarket.com/market/${market.slug}` }
+    ];
+  } else if (market.market_options && market.market_options.length > 0) {
+    // Eğer çoklu seçenekliyse (Multiple Choice), tüm şıkları Google'a gönder
+    suggestedAnswers = market.market_options.map((opt: any) => ({
+      "@type": "Answer",
+      "text": `${opt.name} (%${Math.round((opt.probability || 0) * 100)} İhtimal)`,
+      "url": `https://nolymarket.com/market/${market.slug}`
+    }));
+  }
+
+  // 3. QAPage Şeması (Google'da Soru-Cevap Kutucukları Çıkarmak İçin)
+  const qaSchema = {
+    "@context": "https://schema.org",
+    "@type": "QAPage",
+    "mainEntity": {
+      "@type": "Question",
+      "name": market.question,
+      "text": market.description || "Bu piyasada yatırımcılar gelecekteki bu olayın sonucunu oranlarla tahmin ediyor.",
+      "answerCount": suggestedAnswers.length,
+      "suggestedAnswer": suggestedAnswers
+    }
+  };
+
+  // İki şemayı birleştirip Google'a tek bir paket (Array) olarak sunuyoruz
+  const jsonLd = [breadcrumbSchema, qaSchema];
+
   const isResolved = market.status === 'resolved';
   const isCancelled = market.status === 'cancelled';
   const isActive = market.status === 'active';
@@ -81,7 +115,6 @@ export default async function MarketPage({ params }: { params: Promise<{ slug: s
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       
-      {/* Container boşlukları optimize edildi */}
       <div className="container mx-auto px-2 sm:px-4 py-4 md:py-8 max-w-[1400px] animate-in fade-in duration-500">
         
         <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 lg:gap-8">
@@ -124,14 +157,9 @@ export default async function MarketPage({ params }: { params: Promise<{ slug: s
 
             {/* 3. PREMIUM GRAFİK ALANI */}
             <div className="bg-card border border-border/50 sm:border-2 rounded-2xl sm:rounded-3xl p-3 sm:p-6 h-[280px] sm:h-[420px] shadow-sm relative overflow-hidden group">
-               {/* Arka plan süslemesi (Neon Glow) */}
                <div className="absolute top-0 right-0 w-48 sm:w-80 h-48 sm:h-80 bg-primary/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none transition-all duration-700 group-hover:bg-primary/10" />
                
                <div className="relative z-10 h-full w-full">
-                 {/* Grafik Yükleme Mantığı Değişti: 
-                    Artık data boş olsa bile MarketChart'ı çağırıyoruz. 
-                    Çünkü MarketChart'ın içinde "Hiç veri yoksa başlangıç verisinden düz çizgi çek" mantığı yazdık.
-                 */}
                  {!chartError ? (
                    <MarketChart data={chartData} market={market} />
                  ) : (
