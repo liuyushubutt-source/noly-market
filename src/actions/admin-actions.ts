@@ -27,13 +27,10 @@ export async function resolveMarketAction(formData: FormData) {
 
   if (predictions && predictions.length > 0) {
     for (const pred of predictions) {
-      // Tahmin doğru mu kontrol et
       const isWin = (side && pred.side === side) || (optionId && pred.option_id === Number(optionId));
 
-      // UI'da (Profil/Portfolyo) yeşil/kırmızı yanması için is_winner'ı kaydet
       await supabase.from("predictions").update({ is_winner: isWin }).eq("id", pred.id);
 
-      // Bildirim Gönder
       if (isWin) {
         await supabase.from("notifications").insert({
           user_id: pred.user_id,
@@ -64,19 +61,16 @@ export async function cancelMarketAction(formData: FormData) {
   
   const supabase = await createServerSideClient();
 
-  // 1. Piyasayı İptal Et ve İadeleri Yap (Senin SQL fonksiyonun)
   const { error } = await supabase.rpc('cancel_market_and_refund', {
     p_market_id: marketId
   });
 
   if (error) throw new Error(error.message);
 
-  // 2. İade alan kullanıcılara Bildirim at
   const { data: predictions } = await supabase.from("predictions").select("user_id").eq("market_id", marketId);
   const { data: market } = await supabase.from("markets").select("question").eq("id", marketId).single();
   
   if (predictions && predictions.length > 0) {
-    // Aynı kullanıcıya birden fazla tahmin yaptıysa tek bildirim gitsin diye Set kullanıyoruz
     const uniqueUsers = Array.from(new Set(predictions.map(p => p.user_id)));
     
     for (const userId of uniqueUsers) {
@@ -93,4 +87,39 @@ export async function cancelMarketAction(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/profile");
   revalidatePath("/portfolio");
+}
+
+// ---------------------------------------------------------
+// 🔥 YENİ EKLENENLER: YAPAY ZEKA TASLAK ONAY SİSTEMİ
+// ---------------------------------------------------------
+
+// 3. Taslağı Onaylar ve Canlıya Alır
+export async function approveDraftAction(formData: FormData) {
+  const marketId = Number(formData.get("marketId"));
+  const supabase = await createServerSideClient();
+
+  const { error } = await supabase
+    .from("markets")
+    .update({ status: "active" })
+    .eq("id", marketId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+}
+
+// 4. Taslağı Çöpe Atar (Siler)
+export async function deleteDraftAction(formData: FormData) {
+  const marketId = Number(formData.get("marketId"));
+  const supabase = await createServerSideClient();
+
+  const { error } = await supabase
+    .from("markets")
+    .delete()
+    .eq("id", marketId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin");
 }

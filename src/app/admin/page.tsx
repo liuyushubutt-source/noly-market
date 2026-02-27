@@ -1,9 +1,9 @@
 import { createServerSideClient } from "@/lib/server-utils";
 import { CreateMarketForm } from "@/components/admin/create-market";
 import { Button } from "@/components/ui/button";
-import { resolveMarketAction, cancelMarketAction } from "@/actions/admin-actions";
+import { resolveMarketAction, cancelMarketAction, approveDraftAction, deleteDraftAction } from "@/actions/admin-actions";
 import { redirect } from "next/navigation";
-import { AlertTriangle, CheckCircle2, TrendingUp, ShieldAlert, BadgeInfo } from "lucide-react";
+import { AlertTriangle, CheckCircle2, TrendingUp, ShieldAlert, BadgeInfo, Bot, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
@@ -18,12 +18,19 @@ export default async function AdminPage() {
     redirect("/"); 
   }
 
-  // Sadece aktif piyasaları seçenekleriyle birlikte çekiyoruz
-  const { data: markets } = await supabase
-    .from("markets")
-    .select("*, market_options(*)")
-    .eq("status", "active")
-    .order("created_at", { ascending: false });
+  // Hem aktifleri hem de taslakları (draft) aynı anda çekiyoruz
+  const [ { data: markets }, { data: drafts } ] = await Promise.all([
+    supabase
+      .from("markets")
+      .select("*, market_options(*)")
+      .eq("status", "active")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("markets")
+      .select("*")
+      .eq("status", "draft")
+      .order("created_at", { ascending: false })
+  ]);
 
   return (
     <div className="max-w-6xl mx-auto space-y-12 py-10 px-4 md:px-8">
@@ -49,7 +56,56 @@ export default async function AdminPage() {
 
       <CreateMarketForm />
 
-      {/* AÇIK PİYASALAR LİSTESİ */}
+      {/* 🔥 YENİ EKLENEN: YAPAY ZEKA TASLAK ONAY BÖLÜMÜ */}
+      {drafts && drafts.length > 0 && (
+        <div className="space-y-6 pt-6 animate-in fade-in duration-500">
+          <h2 className="text-2xl font-black flex items-center gap-2 border-b border-border/50 pb-4">
+            <Bot className="text-primary" /> AI Onay Bekleyen Taslaklar
+            <Badge className="bg-primary text-primary-foreground ml-2">{drafts.length}</Badge>
+          </h2>
+          
+          <div className="grid grid-cols-1 gap-5">
+            {drafts.map((d) => (
+              <div key={d.id} className="p-5 border-2 border-primary/30 rounded-[2rem] flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-primary/5 shadow-sm relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                
+                {/* Taslak Bilgisi */}
+                <div className="flex-1 space-y-2 relative z-10">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-md bg-secondary text-secondary-foreground border border-border/50">
+                      {d.category}
+                    </span>
+                    <span className="text-[10px] font-black uppercase text-orange-600 bg-orange-500/10 px-2.5 py-1 rounded-md flex items-center gap-1">
+                      <AlertTriangle size={12} /> TASLAK
+                    </span>
+                  </div>
+                  <p className="font-bold text-lg leading-tight pr-4">{d.question}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Bitiş: {d.end_date}</p>
+                </div>
+
+                {/* Taslak Aksiyonları (Onayla / Sil) */}
+                <div className="flex items-center gap-3 shrink-0 relative z-10">
+                  <form action={deleteDraftAction}>
+                    <input type="hidden" name="marketId" value={d.id} />
+                    <Button type="submit" size="sm" variant="ghost" className="text-red-500 hover:bg-red-500/10 hover:text-red-600 font-bold h-10 rounded-xl px-4">
+                      <Trash2 size={16} className="mr-2" /> Sil
+                    </Button>
+                  </form>
+
+                  <form action={approveDraftAction}>
+                    <input type="hidden" name="marketId" value={d.id} />
+                    <Button type="submit" size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground font-black h-10 px-5 rounded-xl shadow-lg shadow-primary/20 hover:scale-105 transition-transform">
+                      <CheckCircle2 size={16} className="mr-2" /> Yayına Al
+                    </Button>
+                  </form>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* AÇIK PİYASALAR LİSTESİ (MEVCUT YAPI) */}
       <div className="space-y-6 pt-6">
         <h2 className="text-2xl font-black flex items-center gap-2 border-b border-border/50 pb-4">
           <TrendingUp className="text-primary" /> İşlemdeki Piyasalar
