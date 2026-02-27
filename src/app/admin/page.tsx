@@ -1,7 +1,7 @@
 import { createServerSideClient } from "@/lib/server-utils";
 import { CreateMarketForm } from "@/components/admin/create-market";
 import { Button } from "@/components/ui/button";
-import { resolveMarketAction, cancelMarketAction, approveDraftAction, deleteDraftAction } from "@/actions/admin-actions";
+import { resolveMarketAction, cancelMarketAction, approvePendingMarketAction, deletePendingMarketAction } from "@/actions/admin-actions";
 import { redirect } from "next/navigation";
 import { AlertTriangle, CheckCircle2, TrendingUp, ShieldAlert, BadgeInfo, Bot, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +18,7 @@ export default async function AdminPage() {
     redirect("/"); 
   }
 
-  // Hem aktifleri hem de taslakları (draft) aynı anda çekiyoruz
+  // Hem aktifleri hem de taslakları (draft/bekleyen) aynı anda çekiyoruz
   const [ { data: markets }, { data: drafts } ] = await Promise.all([
     supabase
       .from("markets")
@@ -56,13 +56,17 @@ export default async function AdminPage() {
 
       <CreateMarketForm />
 
-      {/* 🔥 YENİ EKLENEN: YAPAY ZEKA TASLAK ONAY BÖLÜMÜ */}
+      {/* 🔥 GÜNCELLENEN: BEKLEYEN PİYASALAR ONAY BÖLÜMÜ (AI & Manuel) */}
       {drafts && drafts.length > 0 && (
         <div className="space-y-6 pt-6 animate-in fade-in duration-500">
-          <h2 className="text-2xl font-black flex items-center gap-2 border-b border-border/50 pb-4">
-            <Bot className="text-primary" /> AI Onay Bekleyen Taslaklar
-            <Badge className="bg-primary text-primary-foreground ml-2">{drafts.length}</Badge>
-          </h2>
+          <div className="flex items-center justify-between border-b border-border/50 pb-4">
+            <h2 className="text-2xl font-black flex items-center gap-2">
+              <Bot className="text-primary" /> Onay Bekleyen Piyasalar
+            </h2>
+            <Badge className="bg-primary text-primary-foreground text-sm px-3 py-1">
+              {drafts.length} Bekleyen
+            </Badge>
+          </div>
           
           <div className="grid grid-cols-1 gap-5">
             {drafts.map((d) => (
@@ -76,23 +80,25 @@ export default async function AdminPage() {
                       {d.category}
                     </span>
                     <span className="text-[10px] font-black uppercase text-orange-600 bg-orange-500/10 px-2.5 py-1 rounded-md flex items-center gap-1">
-                      <AlertTriangle size={12} /> TASLAK
+                      <AlertTriangle size={12} /> BEKLİYOR
                     </span>
                   </div>
                   <p className="font-bold text-lg leading-tight pr-4">{d.question}</p>
-                  <p className="text-xs font-medium text-muted-foreground">Bitiş: {d.end_date}</p>
+                  {d.end_date && (
+                    <p className="text-xs font-medium text-muted-foreground">Bitiş: {new Date(d.end_date).toLocaleString('tr-TR')}</p>
+                  )}
                 </div>
 
                 {/* Taslak Aksiyonları (Onayla / Sil) */}
                 <div className="flex items-center gap-3 shrink-0 relative z-10">
-                  <form action={deleteDraftAction}>
+                  <form action={deletePendingMarketAction}>
                     <input type="hidden" name="marketId" value={d.id} />
                     <Button type="submit" size="sm" variant="ghost" className="text-red-500 hover:bg-red-500/10 hover:text-red-600 font-bold h-10 rounded-xl px-4">
                       <Trash2 size={16} className="mr-2" /> Sil
                     </Button>
                   </form>
 
-                  <form action={approveDraftAction}>
+                  <form action={approvePendingMarketAction}>
                     <input type="hidden" name="marketId" value={d.id} />
                     <Button type="submit" size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground font-black h-10 px-5 rounded-xl shadow-lg shadow-primary/20 hover:scale-105 transition-transform">
                       <CheckCircle2 size={16} className="mr-2" /> Yayına Al

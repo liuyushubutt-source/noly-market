@@ -11,7 +11,7 @@ export async function resolveMarketAction(formData: FormData) {
 
   const supabase = await createServerSideClient();
 
-  // 1. Adım: Senin mevcut SQL fonksiyonunu (Bakiye dağıtımı vs.) çalıştırıyoruz
+  // 1. Adım: SQL fonksiyonunu (Bakiye dağıtımı vs.) çalıştırıyoruz
   const { error } = await supabase.rpc('resolve_market', {
     p_market_id: marketId,
     p_winning_side: side || null,
@@ -90,14 +90,17 @@ export async function cancelMarketAction(formData: FormData) {
 }
 
 // ---------------------------------------------------------
-// 🔥 YENİ EKLENENLER: YAPAY ZEKA TASLAK ONAY SİSTEMİ
+// 🔥 BEKLEYEN PİYASALAR İÇİN ONAY VE SİLME SİSTEMİ
+// (Yapay Zeka Taslakları ve Elle Eklenen Piyasalar İçin Ortak)
 // ---------------------------------------------------------
 
-// 3. Taslağı Onaylar ve Canlıya Alır
-export async function approveDraftAction(formData: FormData) {
+// 3. Bekleyen Piyasayı (Taslak/Manuel) Onaylar ve Canlıya Alır
+// 3. Bekleyen Piyasayı (Taslak/Manuel) Onaylar, Canlıya Alır ve MAKE.COM'u Tetikler
+export async function approvePendingMarketAction(formData: FormData) {
   const marketId = Number(formData.get("marketId"));
   const supabase = await createServerSideClient();
 
+  // 1. Adım: Önce piyasanın statüsünü 'active' yap
   const { error } = await supabase
     .from("markets")
     .update({ status: "active" })
@@ -105,19 +108,56 @@ export async function approveDraftAction(formData: FormData) {
 
   if (error) throw new Error(error.message);
 
+  // 2. Adım: Onaylanan piyasanın detaylarını çek (Make.com'a göndermek için)
+  const { data: market } = await supabase
+    .from("markets")
+    .select("*")
+    .eq("id", marketId)
+    .single();
+
+  // 3. Adım: Make.com Webhook'una veriyi gönder (Kurye)
+  if (market) {
+    try {
+      // DİKKAT: BURAYA ALDIĞIN MAKE.COM WEBHOOK URL'SİNİ YAPIŞTIR
+      const MAKE_WEBHOOK_URL = "https://hook.eu1.make.com/b7yds1bgsx72byk5c1ywfnhtxme6pqdi";
+
+      await fetch(MAKE_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          event: "market_approved",
+          marketId: market.id,
+          question: market.question,
+          category: market.category,
+          endDate: market.end_date,
+          url: `https://nolymarket.com/market/${market.id}` // Kullanıcıları yönlendirmek için link
+        }),
+      });
+      console.log("Make.com'a veri başarıyla gönderildi!");
+    } catch (err) {
+      console.error("Make.com'a veri gönderilirken hata oluştu:", err);
+      // Try-catch içine aldık ki, webhook çökse veya internet gitse bile 
+      // admin panelin hata vermesin, piyasa başarıyla yayınlanmaya devam etsin.
+    }
+  }
+
   revalidatePath("/");
   revalidatePath("/admin");
 }
 
-// 4. Taslağı Çöpe Atar (Siler)
-export async function deleteDraftAction(formData: FormData) {
+// 4. Bekleyen Piyasayı (Taslak/Manuel) Çöpe Atar
+export async function deletePendingMarketAction(formData: FormData) {
   const marketId = Number(formData.get("marketId"));
   const supabase = await createServerSideClient();
 
+  // Opsiyonel Güvenlik: Sadece "draft" veya "pending" statüsündeki piyasaları sildirtmek isteyebilirsin.
+  // Yanlışlıkla yayındaki (active) bir piyasayı silmeyi engeller.
   const { error } = await supabase
     .from("markets")
     .delete()
-    .eq("id", marketId);
+    .match({ id: marketId, status: "draft" }); // Statüsü taslak/bekliyor olanları siler
 
   if (error) throw new Error(error.message);
 
