@@ -36,7 +36,7 @@ On this platform, you don't just say "I think it will be like this"; By supporti
 
 * **Graphics:** Recharts
 
-* **Backend & Database:** Subbase (PostgreSQL, Auth, Row Level Security)
+* **Backend & Database:** Supabase (PostgreSQL, Auth, Row Level Security)
 
 * **Date Management:** date-fns
 
