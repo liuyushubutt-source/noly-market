@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
 
-// 🛠️ KRİTİK EKLENTİ: Bu satır build hatasını çözer.
+
 // Sayfanın statik oluşturulmasını engeller, her istekte sunucuda çalışmasını sağlar.
 export const dynamic = "force-dynamic";
 
