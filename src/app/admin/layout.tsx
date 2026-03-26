@@ -1,7 +1,7 @@
 import { createServerSideClient } from "@/lib/server-utils";
 import { redirect } from "next/navigation";
 
-const ADMIN_EMAILS = ["ersozberk@gmail.com"]; // Kendi mailini yaz Berk
+const ADMIN_EMAILS = ["ersozberk@gmail.com"];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createServerSideClient();
