@@ -13,7 +13,7 @@ export default function AccuracyPage() {
           <ShieldCheck className="text-green-500 h-12 w-12" />
         </div>
         <h1 className="text-4xl md:text-5xl font-black tracking-tighter">
-          NOLY MARKET NE KADAR DOĞRU?
+          NOLY MARKET NE KADAR İSABETLİ?
         </h1>
         <p className="text-muted-foreground font-medium text-lg max-w-2xl mx-auto">
           Piyasalarımız haber sitelerinden veya anketlerden daha isabetlidir. Çünkü burada insanlar görüşlerini sadece söylemez, arkasına "TP" koyarlar.
@@ -52,7 +52,7 @@ export default function AccuracyPage() {
             İnsanlar bir fikrin arkasına kendi birikimlerini koyduklarında, duygularından arınır ve analitik düşünmeye başlarlar. Bir piyasada 'Evet' ihtimali %70 olarak görünüyorsa, bu rastgele bir sayı değildir. Bu, o konuya kafa yoran, araştıran ve parasını riske atan yüzlerce kişinin ortak uzlaşmasıdır.
           </p>
           <p>
-            Bu dinamik, AMM (Otomatik Piyasa Yapıcı) algoritmamızla birleştiğinde, haber bültenlerinden bile daha hızlı ve doğru bir sinyal mekanizması yaratır.
+            Bu dinamik, OPY (Otomatik Piyasa Yapıcı) algoritmamızla birleştiğinde, haber bültenlerinden bile daha hızlı ve doğru bir sinyal mekanizması yaratır.
           </p>
         </div>
 
