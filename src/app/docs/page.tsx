@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Nasıl Çalışır? | Noly Market",
-  description: "Noly Market'te nasıl işlem yapılır ve TP kazanılır öğrenin.",
+  description: "Noly Market'te nasıl işlem yapılır ve Tahmin Puan kazanılır öğrenin.",
 };
 
 export default function DocsPage() {
