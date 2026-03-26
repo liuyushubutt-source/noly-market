@@ -38,7 +38,7 @@ export default async function ProfilePage() {
   const resolvedPredictions = predictions.filter(p => p.is_winner !== null);
   const accuracyRate = resolvedPredictions.length > 0 ? Math.round((wonPredictions.length / resolvedPredictions.length) * 100) : null;
 
-  // DİNAMİK RÜTBE SİSTEMİ (Gamification)
+  // DİNAMİK RÜTBE SİSTEMİ
   let rank = { title: "Çaylak Tahminci", icon: Activity, color: "text-muted-foreground", bg: "bg-secondary" };
   if (totalVolume > 1000) rank = { title: "Yükselen Yıldız", icon: Zap, color: "text-blue-500", bg: "bg-blue-500/10" };
   if (totalVolume > 10000) rank = { title: "Piyasa Uzmanı", icon: Target, color: "text-purple-500", bg: "bg-purple-500/10" };
