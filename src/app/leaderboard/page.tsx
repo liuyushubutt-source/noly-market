@@ -28,7 +28,7 @@ export default async function LeaderboardPage() {
 
   if (user) {
     isUserInTop50 = leaders.some((l) => l.id === user.id);
-    // Eğer ilk 50'de değilse, tam sırasını arkadan hesapla
+    // Eğer ilk 50'de değil ise tam sırasını arkadan hesapla
     if (!isUserInTop50) {
       currentUserRankData = await getCurrentUserRank(user.id);
     }
