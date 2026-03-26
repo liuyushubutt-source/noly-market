@@ -13,7 +13,7 @@ export default function ApiDocsPage() {
         </div>
         <h1 className="text-4xl md:text-5xl font-black tracking-tighter">API & GELİŞTİRİCİLER</h1>
         <p className="text-muted-foreground font-medium text-lg max-w-2xl mx-auto">
-          N'olcak Market'in gerçek zamanlı oranlarını ve piyasa verilerini kendi uygulamalarına entegre et.
+          Noly Market'in gerçek zamanlı oranlarını ve piyasa verilerini kendi uygulamalarına entegre et.
         </p>
       </div>
 
