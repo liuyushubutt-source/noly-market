@@ -18,7 +18,7 @@ export default async function AdminPage() {
     redirect("/"); 
   }
 
-  // Hem aktifleri hem de taslakları (draft/bekleyen) aynı anda çekiyoruz
+  // Hem aktifleri hem de taslakları aynı anda çekiyoruz
   const [ { data: markets }, { data: drafts } ] = await Promise.all([
     supabase
       .from("markets")
