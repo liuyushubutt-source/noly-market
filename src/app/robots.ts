@@ -10,7 +10,7 @@ export default function robots(): MetadataRoute.Robots {
         '/_next/',    // Next.js'in kendi sistem dosyalarını taramalarını engelle
       ],
     },
-    // SİTE HARİTASI BAĞLANTISI (En kritik yer!)
+    // SİTE HARİTASI BAĞLANTISI
     // Google botu robots.txt'yi okuduğunda sitemap'in nerede olduğunu otomatik bulacak.
     sitemap: 'https://nolymarket.com/sitemap.xml',
   };
