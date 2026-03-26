@@ -62,7 +62,7 @@ export async function claimHourlyReward() {
     }
   }
 
-  // 1. Adım Hile Koruması: Önce sadece zamanı güncelliyoruz (Üst üste tıklamaları (spam) önlemek için)
+  // 1. Adım Hile Koruması: Önce sadece zamanı güncelliyoruz
   const { error } = await supabase.from("profiles").update({
     last_hourly_claim: new Date().toISOString()
   }).eq("id", user.id);
