@@ -10,7 +10,7 @@ export default function TermsPage() {
         <h1 className="text-4xl font-black tracking-tighter mb-4 flex items-center gap-3">
           <FileCheck className="text-primary h-10 w-10" /> KULLANIM KOŞULLARI
         </h1>
-        <p className="text-muted-foreground font-medium">Son Güncelleme: 13 Şubat 2026</p>
+        <p className="text-muted-foreground font-medium">Son Güncelleme: 26 Mart 2026</p>
       </div>
 
       <div className="prose prose-sm md:prose-base dark:prose-invert prose-headings:font-black prose-a:text-primary max-w-none space-y-8">
