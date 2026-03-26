@@ -11,7 +11,7 @@ import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
-// 1. VIEWPORT AYARLARI (Mobil SEO için)
+// 1. VIEWPORT AYARLARI
 export const viewport: Viewport = {
   themeColor: "#0f172a", // Koyu tema rengin neyse ona göre ayarla
   width: "device-width",
