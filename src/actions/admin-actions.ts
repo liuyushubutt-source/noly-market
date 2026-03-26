@@ -11,7 +11,7 @@ export async function resolveMarketAction(formData: FormData) {
 
   const supabase = await createServerSideClient();
 
-  // 1. Adım: SQL fonksiyonunu (Bakiye dağıtımı vs.) çalıştırıyoruz
+  // 1. Adım: SQL fonksiyonunu (Bakiye dağıtımı vs.) 
   const { error } = await supabase.rpc('resolve_market', {
     p_market_id: marketId,
     p_winning_side: side || null,
@@ -118,8 +118,8 @@ export async function approvePendingMarketAction(formData: FormData) {
   // 3. Adım: Make.com Webhook'una veriyi gönder (Kurye)
   if (market) {
     try {
-      // DİKKAT: BURAYA ALDIĞIN MAKE.COM WEBHOOK URL'SİNİ YAPIŞTIR
-      const MAKE_WEBHOOK_URL = "https://hook.eu1.make.com/b7yds1bgsx72byk5c1ywfnhtxme6pqdi";
+      
+      const MAKE_WEBHOOK_URL = "";
 
       await fetch(MAKE_WEBHOOK_URL, {
         method: "POST",
