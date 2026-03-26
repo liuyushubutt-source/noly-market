@@ -39,7 +39,7 @@ export async function getCurrentUserRank(userId: string) {
 
   if (error) return null;
 
-  // Sıralama = Kendisinden fazla parası olanların sayısı + 1
+  // Sıralama = Kendisinden fazla puanı olanların sayısı + 1
   return {
     ...userProfile,
     rank: (count || 0) + 1
