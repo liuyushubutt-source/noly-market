@@ -9,7 +9,7 @@ export default function HelpPage() {
   const faqs = [
     {
       q: "TP (Tahmin Puanı) nedir, nasıl kazanılır?",
-      a: "TP, sistemimizin temel para birimidir. Sisteme ilk kayıt olduğunuzda size ücretsiz olarak 1000 TP verilir. Piyasalar hakkında doğru öngörülerde bulunarak bu puanı katlayabilirsiniz."
+      a: "TP, sistemimizin temel para birimidir. Sisteme ilk kayıt olduğunuzda size 1000 TP verilir. Piyasalar hakkında doğru öngörülerde bulunarak bu puanı katlayabilirsiniz."
     },
     {
       q: "Gerçek para yatırabilir miyim veya TP'leri çekebilir miyim?",
