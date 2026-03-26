@@ -10,7 +10,7 @@ export async function claimQuestReward(questId: string, rewardAmount: number) {
 
     if (!user) return { error: "Giriş yapmalısınız." };
 
-    // 1. ADIM: Zaten almış mı? (Kesin Kontrol)
+    // 1. ADIM: Zaten almış mı?
     const { data: alreadyClaimed } = await supabase
       .from("user_quests")
       .select("id")
@@ -22,7 +22,7 @@ export async function claimQuestReward(questId: string, rewardAmount: number) {
       return { error: "Bu ödülü zaten aldınız." };
     }
 
-    // 2. ADIM: Tabloya kayıt at (Bu adım başarısız olursa para yatmayacak)
+    // 2. ADIM: Tabloya kayıt at (Bu adım başarısız olursa puan yatmayacak)
     const { error: insertError } = await supabase
       .from("user_quests")
       .insert({
@@ -37,14 +37,14 @@ export async function claimQuestReward(questId: string, rewardAmount: number) {
       return { error: "Sistem şu an meşgul, lütfen az sonra tekrar deneyin." };
     }
 
-    // 3. ADIM: Sadece kayıt başarılıysa parayı yatır
+    // 3. ADIM: Sadece kayıt başarılıysa puanı ekle
     const { error: rpcError } = await supabase.rpc('add_tp', {
       p_user_id: user.id,
       p_amount: Math.floor(rewardAmount) // Tam sayı olduğundan emin olalım
     });
 
     if (rpcError) {
-      // Eğer para yatmazsa, yukarıda attığımız kaydı geri silmeliyiz (opsiyonel ama güvenli)
+      // Eğer para yatmazsa, yukarıda attığımız kaydı geri silmeliyiz
       await supabase.from("user_quests").delete().eq("user_id", user.id).eq("quest_id", questId);
       console.error("TP YATIRMA HATASI:", rpcError.message);
       return { error: "Bakiye güncellenirken bir hata oluştu." };
