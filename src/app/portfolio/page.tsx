@@ -65,7 +65,7 @@ export default async function PortfolioPage() {
         </div>
       </div>
 
-      {/* ANA FİNANSAL ÖZET KARTI */}
+      {/* ANA FİNANSAL ÖZET */}
       <div className="bg-gradient-to-br from-card to-card/50 border border-border/50 rounded-3xl p-5 sm:p-6 md:p-8 mb-6 shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         
