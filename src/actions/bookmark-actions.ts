@@ -9,7 +9,7 @@ export async function toggleBookmark(marketId: number) {
 
   if (!user) throw new Error("Giriş yapmalısınız");
 
-  // Önce bu piyasa zaten kaydedilmiş mi diye bakıyoruz
+  // Önce bu piyasa zaten kaydedilmiş mi bakıyoruz
   const { data: existing } = await supabase
     .from("bookmarks")
     .select("id")
