@@ -19,7 +19,7 @@ export async function getMarkets({
   
   let query = supabase.from("markets").select("*, market_options(*)").eq("status", "active");
 
-  // EĞER "KAYDETTİKLERİM" SEÇİLİYSE:
+  // EĞER "KAYDETTİKLERİM" ise:
   if (watchlist === "true") {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
