@@ -60,7 +60,7 @@ export default async function MarketPage({ params }: { params: Promise<{ slug: s
     chartError = true;
   }
 
-  // --- 🌟 SEO ALTIN VURUŞU: DİNAMİK QAPage ŞEMASI ---
+
   // 1. Breadcrumb (Site Haritası Yolu) Şeması
   const breadcrumbSchema = {
     "@context": "https://schema.org",
