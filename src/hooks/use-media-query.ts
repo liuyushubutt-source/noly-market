@@ -22,7 +22,7 @@ export function useMediaQuery(query: string): boolean {
     // Dinleyiciyi ekle
     mediaQueryList.addEventListener("change", listener);
 
-    // Bileşen ekrandan kalktığında (unmount) hafıza sızıntısını (memory leak) önle
+    // Bileşen ekrandan kalktığında (unmount) hafıza sızıntısını önle
     return () => {
       mediaQueryList.removeEventListener("change", listener);
     };
