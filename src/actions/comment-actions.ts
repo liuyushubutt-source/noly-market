@@ -9,7 +9,7 @@ export async function getMarketComments(marketId: number) {
   // 1. Önce giriş yapmış kullanıcıyı alıyoruz (Kim beğendi kontrolü için)
   const { data: { user } } = await supabase.auth.getUser();
   
-  // 2. Yorumları, profilleri ve o yoruma ait TÜM beğenileri çekiyoruz
+  // 2. Yorumları, profilleri ve o yoruma ait tüm beğenileri çekiyoruz
   const { data, error } = await supabase
     .from("comments")
     .select(`
