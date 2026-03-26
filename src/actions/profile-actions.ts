@@ -3,7 +3,7 @@
 import { createServerSideClient } from "@/lib/server-utils";
 import { revalidatePath } from "next/cache";
 
-// 1. [EKSİK OLAN PARÇA] Kullanıcı Profil Verisini Getir
+// 1. Kullanıcı Profil Verisini Getir
 export async function getUserProfileData() {
   const supabase = await createServerSideClient();
   const { data: { user } } = await supabase.auth.getUser();
