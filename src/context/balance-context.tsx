@@ -18,7 +18,7 @@ export function BalanceProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const supabase = createClient();
 
-  // 1. Bakiyeyi Veritabanından Çekme Fonksiyonu
+  // 1. Bakiyeyi Veritabanından Çekme
   const refreshBalance = async () => {
     if (!user) return;
     const { data } = await supabase.from("profiles").select("tp_balance").eq("id", user.id).single();
