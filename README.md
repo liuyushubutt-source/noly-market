@@ -1,101 +1,101 @@
-# Noly Market 
+# Noly Market
 
-> Türkiye'nin nabzını tutan, gerçek zamanlı ve modern tahmin piyasası (Prediction Market) platformu.
+> A real-time and modern prediction market platform that keeps its finger on the pulse of Türkiye.
 
 [![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/ersozberk/noly-market/edit/main/README.md)
 [![pt-br](https://img.shields.io/badge/lang-tr-green.svg)](https://github.com/ersozberk/noly-market/edit/main/README-tr.md)
 
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
 ![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?style=for-the-badge&logo=supabase)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css)
+![Tailwind [CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)
 
+## About the Project
 
-## Proje Hakkında
+**Noly Market** is a prediction marketplace where users compete with their predictions on current events (Economy, Sports, Politics, Technology, etc.). It is a reimagined version of the global *Polymarket* concept, adapted to Turkish dynamics, language, and user habits.
 
-**Noly Market**, kullanıcıların güncel olaylar (Ekonomi, Spor, Siyaset, Teknoloji vb.) üzerine öngörülerini yarıştırdığı bir tahmin piyasasıdır. Globaldeki *Polymarket* konseptinin Türkiye dinamiklerine, diline ve kullanıcı alışkanlıklarına göre yeniden hayal edilmiş halidir.
+On this platform, you don't just say "I think it will be like this"; By supporting your knowledge and intuition with virtual balance (TP), you can monitor the pulse of the market in real time.
 
-Bu platformda sadece "bence böyle olur" demezsiniz; bilginizi ve sezgilerinizi sanal bakiye (TP) ile destekleyerek piyasanın nabzını anlık olarak izlersiniz.
+### Key Features
 
-### Temel Özellikler
-
-* ⚡️ **Sıfır Gecikme (Optimistic UI):** İşlem yapıldığı an sunucu yanıtını beklemeden arayüz ve bakiye güncellenir.
-* 📊 **Canlı ve Akıllı Grafikler:** İşlem oldukça güncellenen, trend yönüne göre renk değiştiren profesyonel alan (area) grafikleri (Recharts).
-* 🤖 **SQL Tetikleyicileri (Triggers):** Her işlemi otomatik olarak geçmiş fiyat veritabanına kaydeden sağlam backend mimarisi.
-* 🔐 **Kesintisiz Kimlik Doğrulama:** Supabase Auth ile Google üzerinden tek tıkla güvenli giriş.
-* 🎨 **Modern ve Dinamik Arayüz:** Tailwind CSS ve Shadcn/UI ile oluşturulmuş, tamamen responsive ve göz yormayan tasarım.
-* 🎭 **Kişiselleştirilebilir Profil:** Veritabanını yormayan, DiceBear destekli şık varsayılan avatar havuzu.
+* ⚡️ **Zero Latency (Optimistic UI):** The interface and balance are updated instantly without waiting for a server response.
+* 📊 **Live and Smart Charts:** Professional area charts (Recharts) that are updated as transactions occur and change color according to the trend direction.
+* 🤖 **SQL Triggers:** Robust backend architecture that automatically records every transaction to the historical price database.
+* 🔐 **Seamless Authentication:** Secure login with one-click via Google using Supabase Auth.
+* 🎨 **Modern and Dynamic Interface:** Fully responsive and eye-friendly design created with Tailwind CSS and Shadcn/UI.
+* 🎭 **Customizable Profile:** A stylish default avatar pool powered by DiceBear that doesn't strain the database.
 
 ---
 
-## 🛠️ Kullanılan Teknolojiler
+## 🛠️ Technologies Used
 
 * **Frontend:** Next.js 14 (App Router), React, TypeScript
-* **Stil & UI:** Tailwind CSS, Shadcn/UI, Lucide Icons
-* **Grafik:** Recharts
-* **Backend & Veritabanı:** Supabase (PostgreSQL, Auth, Row Level Security)
-* **Tarih Yönetimi:** date-fns
+
+* **Style & UI:** Tailwind CSS, Shadcn/UI, Lucide Icons
+
+* **Graphics:** Recharts
+
+* **Backend & Database:** Subbase (PostgreSQL, Auth, Row Level Security)
+
+* **Date Management:** date-fns
 
 ---
 
-## ⚙️ Kurulum (Geliştiriciler İçin)
+## ⚙️ Setup (For Developers)
 
-Projeyi kendi bilgisayarınızda çalıştırmak için aşağıdaki adımları izleyin:
+To run the project on your own computer, follow these steps:
 
-### 1. Depoyu Klonlayın
+### 1. Clone the Repository
 ```Bash
 git clone https://github.com/ersozberk/noly-market/
 cd noly-market
 ```
 
-### 2. Bağımlılıkları Yükleyin
+### 2. Install Dependencies
 ```Bash
 npm install
 ```
 
-### 3. Çevre Değişkenlerini Ayarlayın
-Kök dizinde .env.local adında bir dosya oluşturun ve Supabase bilgilerinizi ekleyin:
+### 3. Environment Variables Setup
+Create a file named .env.local in the root directory and add your Supabase information:
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=senin_supabase_proje_url_adresin
-NEXT_PUBLIC_SUPABASE_ANON_KEY=senin_supabase_anon_key_sifren
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url_address
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_password
 ```
 
-### 4. Veritabanını Kurun
-Supabase SQL Editor üzerinden, projede bulunan SQL tablolarını ve trigger'ları ( markets, prices, profiles vb.) oluşturun.
+### 4. Set Up the Database
+Create the SQL tables and triggers (markets, prices, profiles, etc.) in the project using the Supabase SQL Editor.
 
-### 5. Sunucuyu Başlatın
+### 5. Start the Server
 ```Bash
 npm run dev
 ```
+You can view the project by going to http://localhost:3000 in your browser.
 
-Tarayıcınızda http://localhost:3000 adresine giderek projeyi görüntüleyebilirsiniz.
+## 🤝 Contributing
+Noly Market is developed with an open-source vision. We welcome your contributions if you want to add new features, fix bugs, or improve the interface!
 
-## 🤝 Katkıda Bulunma
-Noly Market açık kaynaklı bir vizyonla geliştirilmektedir. Yeni özellikler eklemek, bug çözmek veya arayüzü iyileştirmek isterseniz katkılarınızı bekliyoruz!
+How Can You Contribute?
 
-Nasıl Katkı Sağlayabilirsiniz?
+Fork this repository.
 
-Bu depoyu "Fork"layın.
-
-Kendi özelliğiniz için yeni bir dal (branch) oluşturun:
+Create a new branch for your feature:
 ```
-git checkout -b feature/HarikaBirOzellik
+git checkout -b feature/AGreatFeature
 ```
+Commit your changes:
+```
+git commit -m 'A new AgreatFeature added'
+```
+Push to your branch:
+```
+git push origin feature/AgreatFeature
+```
+Open a Pull Request (PR).
 
-Değişikliklerinizi commit edin:
-```
-git commit -m 'Yeni bir HarikaBirOzellik eklendi'
-```
+Please ensure your code is compatible with the existing architecture when opening the PR and that you include any SQL code required by the newly added features in the description.
 
-Dalınıza gönderin (Push):
-```
-git push origin feature/HarikaBirOzellik
-```
-Bir Pull Request (PR) açın.
-
-Lütfen PR açarken kodunuzun mevcut mimariye uygun olduğundan ve varsa yeni eklediğiniz özelliklerin gerektirdiği SQL kodlarını açıklamaya eklediğinizden emin olun.
-
-## Lisans
-Bu proje MIT Lisansı altında lisanslanmıştır. Dilediğiniz gibi kullanabilir, değiştirebilir ve dağıtabilirsiniz.
+## License
+This project is licensed under the MIT License. You may use, modify, and distribute it as you wish.
