@@ -16,7 +16,7 @@ export default async function RewardsPage() {
   let tpBalance = 0;
   let completedQuests: string[] = []; 
   
-  // GÖREV DOĞRULAMA (VERIFICATION) DEĞİŞKENLERİ
+  // GÖREV DOĞRULAMA DEĞİŞKENLERİ
   let hasPrediction = false;
   let hasComment = false;
   let isProfileComplete = false;
