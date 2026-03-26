@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getMarkets } from "@/actions/market-actions";
-// DİKKAT: MarketCard'ın dosya yolunu kendi projene göre kontrol et.
-// Eğer components klasörünün altındaysa yol muhtemelen böyledir:
+
 import { MarketCard } from "@/components/market/market-card"; 
 
 type Props = {
