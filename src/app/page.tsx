@@ -53,7 +53,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                 </div>
               </div>
 
-              {/* Sağ Taraf - Kompakt Canlı İstatistik (Sadece masaüstü ve tablette görünür, mobilde kalabalık yapmaz) */}
+              {/* Sağ Taraf - Kompakt Canlı İstatistik */}
               <div className="hidden md:flex flex-col gap-3 min-w-[240px]">
                 <div className="bg-background/60 backdrop-blur-sm border border-border/50 p-4 sm:p-5 rounded-2xl shadow-sm">
                    <div className="flex items-center gap-3 mb-2">
