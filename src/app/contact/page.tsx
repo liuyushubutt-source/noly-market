@@ -9,7 +9,6 @@ import { toast } from "sonner";
 
 export const dynamic = "force-dynamic";
 
-// Sayfanın asıl içeriğini ayrı bir bileşen içine aldık
 function ContactContent() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,7 +96,7 @@ function ContactContent() {
   );
 }
 
-// Ana sayfa component'i artık Suspense ile sarmalanmış halde export ediliyor
+
 export default function ContactPage() {
   return (
     // Eğer saniyelik bir gecikme olursa ekranda patlamak yerine yumuşak bir yükleniyor ekranı gösterecek
