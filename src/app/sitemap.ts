@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next';
-import { getAllMarketSlugs } from '@/actions/market-actions'; // Yeni yazdığımız fonksiyonu import ettik
+import { getAllMarketSlugs } from '@/actions/market-actions';
 export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://nolymarket.com'; // Domain adresin
@@ -33,8 +33,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     dynamicRoutes = markets.map((market) => ({
       url: `${baseUrl}/market/${market.slug}`,
       lastModified: market.updated_at ? new Date(market.updated_at) : new Date(),
-      changeFrequency: 'hourly' as const, // Oranlar değiştiği için saatlik tarama istiyoruz
-      priority: 0.9, // Piyasa sayfaları bizim için en değerli sayfalar
+      changeFrequency: 'hourly' as const,
+      priority: 0.9, 
     }));
 
   } catch (error) {
