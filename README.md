@@ -2,8 +2,8 @@
 
 > A real-time and modern prediction market platform that keeps its finger on the pulse of Türkiye.
 
-[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/ersozberk/noly-market/edit/main/README.md)
-[![pt-br](https://img.shields.io/badge/lang-tr-green.svg)](https://github.com/ersozberk/noly-market/edit/main/README-tr.md)
+[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/ersozberk/noly-market/main/README.md)
+[![pt-br](https://img.shields.io/badge/lang-tr-green.svg)](https://github.com/ersozberk/noly-market/main/README-tr.md)
 
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
 ![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?style=for-the-badge&logo=supabase)
