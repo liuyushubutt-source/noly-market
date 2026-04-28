@@ -1,6 +1,6 @@
 # Noly Market
 
-> A real-time and modern prediction market platform that keeps its finger on the pulse of Türkiye.
+> A real-time prediction market platform that keeps its finger on the pulse of Türkiye.
 
 [![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/ersozberk/noly-market/main/README.md)
 [![pt-br](https://img.shields.io/badge/lang-tr-green.svg)](https://github.com/ersozberk/noly-market/main/README-tr.md)
